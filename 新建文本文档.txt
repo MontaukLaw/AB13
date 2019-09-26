@@ -1,0 +1,1 @@
+{"messageid":"12583","timestamp":1536286237,"cmd":"CMD-02","deviceid":"PAD20-000000","desired":{"timestamp":1536286237}}

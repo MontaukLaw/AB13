@@ -1,0 +1,90 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "/usr/include",
+                "/usr/local/include",
+                "${workspaceFolder}"
+            ],
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "/usr/include",
+                    "/usr/local/include",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ]
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "/usr/include",
+                "/usr/local/include",
+                "${workspaceFolder}"
+            ],
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "/usr/include",
+                    "/usr/local/include",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/Core/Inc",
+                "${workspaceFolder}/Drivers/STM32F1xx_HAL_Driver/Inc",
+                "${workspaceFolder}/Middlewares/Third_Party/FreeRTOS/Source/portable/IAR/ARM_CM3",
+                "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32F1xx/Include",
+                "${workspaceFolder}/Middlewares/Third_Party/FreeRTOS/Source/include",
+                "${workspaceFolder}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS",
+                "${workspaceFolder}/Drivers/CMSIS/Include",
+                "${workspaceFolder}/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy",
+                "${workspaceFolder}/user/inc",
+                "C:/APP/IAR Systems/Embedded Workbench 7.5/arm/inc/c",
+                "${workspaceFolder}/user_app/inc",
+                "${workspaceFolder}/user_app/src",
+                "${workspaceFolder}/w5500/host",
+                "${workspaceFolder}/w5500/common",
+                "${workspaceFolder}/w5500/ethernet",
+                "${workspaceFolder}/w5500/ethernet/socket",
+                "${workspaceFolder}/w5500/ethernet/socket_bsd",
+                "${workspaceFolder}/w5500/internet/DNS",
+                "${workspaceFolder}/w5500/internet/DHCP",
+                "${workspaceFolder}/cJSON",
+                "${workspaceFolder}/MQTT/MQTTPacket",
+                "${workspaceFolder}/MQTT",
+                "${workspaceFolder}/MQTT/FreeRTOS"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "intelliSenseMode": "msvc-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}

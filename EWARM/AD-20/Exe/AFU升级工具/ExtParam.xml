@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<PARAM>
+  <Node>
+    <title>电流A有效值</title>
+    <id>00000005</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流A有效值寄存器，刷新率 10Hz</help>
+  </Node>
+
+<Node>
+    <title>A有功功率</title>
+    <id>0000000A</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流 A 通道计量的平均有功功率寄存器，补码，刷新率10Hz</help>
+  </Node>
+<Node>
+    <title>电流A有效值增益</title>
+    <id>00000023</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流A有效值增益，补码</help>
+  </Node>
+<Node>
+    <title>A有效值偏置</title>
+    <id>00000026</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流 A 有效值偏置，补码</help>
+  </Node>
+<Node>
+    <title>A通道增益</title>
+    <id>0000002E</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流 A 通道增益，补码</help>
+  </Node>
+<Node>
+    <title>A通道偏置</title>
+    <id>0000002B</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流 A 通道偏置，补码</help>
+  </Node>
+<Node>
+    <title>A峰值门限</title>
+    <id>00000035</id>
+    <type>DWORD</type>
+    <default>0xFFFF</default>
+    <help>电流 A 峰值门限，补码</help>
+  </Node>
+
+
+
+  <Node>
+    <title>电流B有效值</title>
+    <id>00000006</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流B有效值寄存器，刷新率 10Hz</help>
+  </Node>
+
+  <Node>
+    <title>B有功功率</title>
+    <id>00000013</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流 A 通道计量的平均有功功率寄存器，补码，刷新率10Hz</help>
+  </Node>
+<Node>
+    <title>电流B有效值增益</title>
+    <id>00000024</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流B有效值增益，补码</help>
+  </Node>
+  <Node>
+    <title>B有效值偏置</title>
+    <id>00000027</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流 B 有效值偏置，补码</help>
+  </Node>
+<Node>
+    <title>B通道增益</title>
+    <id>0000002F</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流 B 通道增益，补码</help>
+  </Node>
+  <Node>
+    <title>B通道偏置</title>
+    <id>0000002C</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电流 B 通道偏置，补码</help>
+  </Node>
+   
+  <Node>
+    <title>B峰值门限</title>
+    <id>00000036</id>
+    <type>DWORD</type>
+    <default>0xFFFF</default>
+    <help>电流 B 峰值门限，补码</help>
+  </Node>
+
+
+
+  <Node>
+    <title>功率因子</title>
+    <id>00000008</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>功率因子寄存器，刷新率10Hz</help>
+  </Node>
+  
+  <Node>
+    <title>线电压频率</title>
+    <id>00000009</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>线电压频率/周期寄存器</help>
+  </Node>
+  
+  <Node>
+    <title>电压V有效值</title>
+    <id>00000007</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电压V有效值寄存器，刷新率 10Hz</help>
+  </Node>
+<Node>
+    <title>电压有效值增益</title>
+    <id>00000025</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电压有效值增益，补码</help>
+  </Node>
+  <Node>
+    <title>电压有效值偏置</title>
+    <id>00000028</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电压 有效值偏置，补码</help>
+  </Node>
+<Node>
+    <title>电压通道增益</title>
+    <id>00000030</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电压 通道增益，补码</help>
+  </Node>
+  <Node>
+    <title>电压通道偏置</title>
+    <id>0000002D</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>电压 通道偏置，补码</help>
+  </Node>
+
+  <Node>
+    <title>电压峰值门限</title>
+    <id>00000037</id>
+    <type>DWORD</type>
+    <default>0xFFFF</default>
+    <help>电压 峰值门限，补码</help>
+  </Node>
+
+
+
+
+  <Node>
+    <title>写保护55H</title>
+    <id>0000003E</id>
+    <type>DWORD</type>
+    <default>0x55</default>
+    <help>写保护设置寄存器。写入 55H 时，表示允许对可写寄存器写操作。</help>
+  </Node>
+
+  <Node>
+    <title>工作模式</title>
+    <id>00000014</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>工作模式寄存器</help>
+  </Node>
+
+  <Node>
+    <title>增益寄存器</title>
+    <id>00000015</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>增益寄存器</help>
+  </Node>
+
+  <Node>
+    <title>输出选择</title>
+    <id>00000038</id>
+    <type>DWORD</type>
+    <default>0</default>
+    <help>AT_SEL 中每4位对应AT0~AT3的输出：[3:0]对应AT0</help>
+  </Node>
+</PARAM>

@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<PARAM>
+  <Node>
+    <title>目标状态位</title>
+    <id>00000001</id>
+    <type>BYTEBIT</type>
+    <default>255</default>
+    <bit0>A路</bit0>
+    <bit1>B路</bit1>
+    <bit2>C路</bit2>
+    <bit3>D路</bit3>
+    <help>开关目标状态</help>
+  </Node>
+  <Node>
+    <title>网络开关位</title>
+    <id>00000024</id>
+    <type>BYTEBIT</type>
+    <default>255</default>
+    <bit0>A路</bit0>
+    <bit1>B路</bit1>
+    <bit2>C路</bit2>
+    <bit3>D路</bit3>
+    <help>实际值并不为设置值，如果终端有人为操作，人为操作优先所以此值将会被终端自动改变</help>
+  </Node>
+  <Node>
+    <title>A路错误代码</title>
+    <id>00000002</id>
+    <type>BYTE</type>
+    <default>0</default>
+    <help>错误代码</help>
+  </Node>
+  <Node>
+    <title>B路错误代码</title>
+    <id>00000003</id>
+    <type>BYTE</type>
+    <default>0</default>
+    <help>错误代码</help>
+  </Node>
+  <Node>
+    <title>C路错误代码</title>
+    <id>00000004</id>
+    <type>BYTE</type>
+    <default>0</default>
+    <help>错误代码</help>
+  </Node>
+  <Node>
+    <title>D路错误代码</title>
+    <id>00000005</id>
+    <type>BYTE</type>
+    <default>0</default>
+    <help>错误代码</help>
+  </Node>
+
+  <Node>
+    <title>过热温度</title>
+    <id>00000006</id>
+    <type>BYTE</type>
+    <default>75</default>
+    <help>最高允许温度</help>
+  </Node>
+
+  <Node>
+    <title>防雷是否开启</title>
+    <id>00000007</id>
+    <type>BYTE</type>
+    <default>0</default>
+    <help>0 关闭（默认） 1开启</help>
+  </Node>
+
+  <Node>
+    <title>A路用户额定电流</title>
+    <id>00000008</id>
+    <type>DWORD</type>
+    <default>60000</default>
+    <help>通过学习生成</help>
+  </Node>
+
+  <Node>
+    <title>B路用户额定电流</title>
+    <id>00000009</id>
+    <type>DWORD</type>
+    <default>60000</default>
+    <help>通过学习生成</help>
+  </Node>
+  <Node>
+    <title>C路用户额定电流</title>
+    <id>0000000A</id>
+    <type>DWORD</type>
+    <default>60000</default>
+    <help>通过学习生成</help>
+  </Node>
+  <Node>
+    <title>D路用户额定电流</title>
+    <id>0000000B</id>
+    <type>DWORD</type>
+    <default>60000</default>
+    <help>通过学习生成</help>
+  </Node>
+
+  <Node>
+    <title>A路额定电流</title>
+    <id>0000000C</id>
+    <type>DWORD</type>
+    <default>60000</default>
+    <help>出厂设置</help>
+  </Node>
+  <Node>
+    <title>B路额定电流</title>
+    <id>0000000D</id>
+    <type>DWORD</type>
+    <default>60000</default>
+    <help>出厂设置</help>
+  </Node>
+  <Node>
+    <title>C路额定电流</title>
+    <id>0000000E</id>
+    <type>DWORD</type>
+    <default>60000</default>
+    <help>出厂设置</help>
+  </Node>
+  <Node>
+    <title>D路额定电流</title>
+    <id>0000000F</id>
+    <type>DWORD</type>
+    <default>60000</default>
+    <help>出厂设置</help>
+  </Node>
+
+<Node>
+    <title>A电流K</title>
+    <id>00000010</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>使用标准电流进行校验 寄存器值/此值=显示值</help>
+  </Node>
+<Node>
+    <title>B电流K</title>
+    <id>00000011</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>使用标准电流进行校验 寄存器值/此值=显示值</help>
+  </Node>
+<Node>
+    <title>C电流K</title>
+    <id>00000012</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>使用标准电流进行校验 寄存器值/此值=显示值</help>
+  </Node>
+<Node>
+    <title>D电流K</title>
+    <id>00000013</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>使用标准电流进行校验 寄存器值/此值=显示值</help>
+  </Node>
+
+<Node>
+    <title>A电压K</title>
+    <id>00000014</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>使用标准电压进行校验  寄存器值/此值=显示值</help>
+  </Node>
+<Node>
+    <title>B电压K</title>
+    <id>00000015</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>使用标准电压进行校验 寄存器值/此值=显示值</help>
+  </Node>
+<Node>
+    <title>C电压K</title>
+    <id>00000016</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>使用标准电压进行校验 寄存器值/此值=显示值</help>
+  </Node>
+<Node>
+    <title>D电压K</title>
+    <id>00000017</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>使用标准电压进行校验 寄存器值/此值=显示值</help>
+  </Node>
+
+<Node>
+    <title>A电压实时值</title>
+    <id>00000018</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>当前电压 单位mV</help>
+  </Node>
+<Node>
+    <title>B电压实时值</title>
+    <id>00000019</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>当前电压 单位mV</help>
+  </Node>
+<Node>
+    <title>C电压实时值</title>
+    <id>0000001A</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>当前电压 单位mV</help>
+  </Node>
+<Node>
+    <title>D电压实时值</title>
+    <id>0000001B</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>当前电压 单位mV</help>
+  </Node>
+
+
+
+<Node>
+    <title>A电流实时值</title>
+    <id>0000001C</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>当前电流 单位mA</help>
+  </Node>
+<Node>
+    <title>B电流实时值</title>
+    <id>0000001D</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>当前电流 单位mA</help>
+  </Node>
+<Node>
+    <title>C电流实时值</title>
+    <id>0000001E</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>当前电流 单位mA</help>
+  </Node>
+<Node>
+    <title>D电流实时值</title>
+    <id>0000001F</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>当前电流 单位mA</help>
+  </Node>
+
+<Node>
+    <title>SN</title>
+    <id>00000020</id>
+    <type>DWORD</type>
+    <default>160818001</default>
+    <help>产品唯一编号 格式:YYMMDDNNN(年月日 NNN 1 ~ 999)</help>
+  </Node>
+
+<Node>
+    <title>漏电流mA</title>
+    <id>00000021</id>
+    <type>WORD</type>
+    <default>1</default>
+    <help>当前漏电流 单位mA 只读</help>
+  </Node>
+<Node>
+    <title>漏电流K值</title>
+    <id>00000022</id>
+    <type>WORD</type>
+    <default>1</default>
+    <help>当前漏电流 = 采样值 / K</help>
+  </Node>
+<Node>
+    <title>漏电流零偏</title>
+    <id>00000025</id>
+    <type>WORD</type>
+    <default>0</default>
+    <help>当前漏电流 = （采样值-零偏） / K</help>
+  </Node>
+<Node>
+    <title>电量K值</title>
+    <id>00000023</id>
+    <type>DWORD</type>
+    <default>1</default>
+    <help>当前电量 = 采样值 / K</help>
+  </Node>
+</PARAM>
