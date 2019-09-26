@@ -618,7 +618,7 @@ void StartDefaultTask(void const * argument)
     // TCP_Conn_Init();
     // ProtocolInit();
 
-    M4G_Init();    
+    //M4G_Init();    
     /*初始化外设驱动*/
     //WIFI_Init();
     //GPRS_Init();
