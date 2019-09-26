@@ -133,6 +133,12 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+#if 0  
+  HAL_GPIO_WritePin(GPIOC, M4G_PWRKEY_Pin, GPIO_PIN_SET);
+  osDelay(1000);
+  HAL_GPIO_WritePin(GPIOC, M4G_PWRKEY_Pin , GPIO_PIN_RESET);
+#endif
+  
   MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_SPI1_Init();
@@ -484,9 +490,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   //HAL_GPIO_WritePin(GPIOA, M2M_PWR_Pin|M2M_RESET_Pin, GPIO_PIN_SET);
 
-  // 4G模块的GPIO EN先拉低
+  // 4G模块的KEY先拉低
   HAL_GPIO_WritePin(GPIOA, M4G_PWRKEY_Pin, GPIO_PIN_RESET);  
   
+  // 4G模块的电源先拉低
+  HAL_GPIO_WritePin(GPIOB, M4G_EN_Pin, GPIO_PIN_RESET);  
+   
   /*Configure GPIO pins : LED_ERR_Pin LED_NET_Pin */
   GPIO_InitStruct.Pin = LED_ERR_Pin|LED_NET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -540,14 +549,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
+#if 0
   /*Configure GPIO pins : M2M_PWR_Pin M2M_RESET_Pin */
   GPIO_InitStruct.Pin = M2M_PWR_Pin|M2M_RESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
+#endif
+  
   /*Configure GPIO pin : RTC_IRQ_Pin */
   GPIO_InitStruct.Pin = RTC_IRQ_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -555,12 +565,18 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(RTC_IRQ_GPIO_Port, &GPIO_InitStruct);
   
   // 4G模块的EN脚初始化
-  GPIO_InitStruct.Pin = M4G_EN_Pin|M4G_PWRKEY_Pin;
+  GPIO_InitStruct.Pin = M4G_PWRKEY_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+ 
+  GPIO_InitStruct.Pin = M4G_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  
 }
 
 /* USER CODE BEGIN 4 */
@@ -604,14 +620,15 @@ void StartDefaultTask(void const * argument)
     // 外接时钟初始化
     //ExternRTC_Init(&hi2c1);
     
-    // DBG_LOG("SPI flash erase chip begin.");
-    // SFlash_EraseChip();
-    // DBG_LOG("SPI flash erase chip OK.");
+    //DBG_LOG("SPI flash erase chip begin.");
+    //SFlash_EraseChip();
+    //DBG_LOG("SPI flash erase chip OK.");
+    
     /*初始化系统功能*/
     WorkParam_Init();
     StartLog_Recoder();
     //HTTP_Init();
-    DFU_Init();
+    //DFU_Init();
     DataSave_Init();
 
     // 初始化服务
@@ -624,11 +641,12 @@ void StartDefaultTask(void const * argument)
     //GPRS_Init();
     //w5500_Init(&hspi1);
     
+    // MQTT初始化
+    MQTT_Conn_Init();
+    
     /*初始化业务逻辑*/
     Process_Init();
     
-    // MQTT初始化
-    MQTT_Conn_Init();
     // Control_Init();
     DBG_LOG("System Start!");
     /* Infinite loop */
@@ -637,7 +655,7 @@ void StartDefaultTask(void const * argument)
         CMD_UART_Read_Poll();
         UART_Refresh_Poll();
         LED_FlashPoll();
-        DFU_Poll();
+        //DFU_Poll();
         //Control_Polling();
         TWDT_CLEAR(startTask);
     }

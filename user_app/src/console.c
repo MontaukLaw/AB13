@@ -4,13 +4,13 @@
  * @file conslole.c
  * @version V1.1
  * @date 2016.4.1
- * @brief ¿ØÖÆÌ¨º¯ÊıÎÄ¼ş.
+ * @brief æ§åˆ¶å°å‡½æ•°æ–‡ä»¶.
  *
  * *********************************************************************
- * @note v1.1 CMD ½ÓÊÕ»º´æ¸ÄÎªFIFO
+ * @note v1.1 CMD æ¥æ”¶ç¼“å­˜æ”¹ä¸ºFIFO
  *
  * *********************************************************************
- * @author ËÎÑô
+ * @author å®‹é˜³
  */
 
 
@@ -43,7 +43,7 @@ static void CMD_Console(int argc, char* argv[]);
 
 /* Exported functions --------------------------------------------------------*/
 /**
- * ¿ØÖÆÌ¨³õÊ¼»¯
+ * æ§åˆ¶å°åˆå§‹åŒ–
  */
 void CMD_Init(void) {
 #if CMD_UART_EN == 1
@@ -59,7 +59,7 @@ void CMD_Init(void) {
 }
 
 /**
- * ¿ØÖÆÌ¨´¦ÀíÈÎÎñ
+ * æ§åˆ¶å°å¤„ç†ä»»åŠ¡
  */
 void CMD_Task(void const* argument) {
     DBG_LOG("Console task start.");
@@ -70,9 +70,9 @@ void CMD_Task(void const* argument) {
 }
 
 /**
- * ¿ØÖÆÌ¨¹ÜµÀ×¢²á
- * @param fun  ¸Ã¹ÜµÀ¶ÔÓ¦µÄÊı¾İ·¢ËÍº¯ÊıÖ¸Õë
- * @return ·µ»Ø¹ÜµÀºÅ
+ * æ§åˆ¶å°ç®¡é“æ³¨å†Œ
+ * @param fun  è¯¥ç®¡é“å¯¹åº”çš„æ•°æ®å‘é€å‡½æ•°æŒ‡é’ˆ
+ * @return è¿”å›ç®¡é“å·
  */
 uint8_t CMD_Pipe_Register(CMD_SendFun fun) {
     int i = 0, r = 0;
@@ -92,18 +92,18 @@ uint8_t CMD_Pipe_Register(CMD_SendFun fun) {
 }
 
 /**
- * ¿ØÖÆÌ¨·¢ËÍÊı¾İ
- * @param dat  ´ı·¢ËÍµÄÊı¾İÖ¸Õë
- * @param len  Êı¾İµÄ³¤¶È
+ * æ§åˆ¶å°å‘é€æ•°æ®
+ * @param dat  å¾…å‘é€çš„æ•°æ®æŒ‡é’ˆ
+ * @param len  æ•°æ®çš„é•¿åº¦
  */
 void CMD_SendData(uint8_t* dat, uint16_t len) {
     CMD_PipeSendData(CMD_Pipe, dat, len);
 }
 
 /**
- * ´Ó¿ØÖÆÌ¨»º´æÖĞ¶Á³öÊı¾İ
- * @param dat  Êı¾İ¶Á³ö±£´æµÄÖ¸Õë
- * @param len  ¶Á³öÊı¾İµÄ×î´ó³¤¶È
+ * ä»æ§åˆ¶å°ç¼“å­˜ä¸­è¯»å‡ºæ•°æ®
+ * @param dat  æ•°æ®è¯»å‡ºä¿å­˜çš„æŒ‡é’ˆ
+ * @param len  è¯»å‡ºæ•°æ®çš„æœ€å¤§é•¿åº¦
  */
 uint16_t CMD_ReadData(uint8_t* dat, uint16_t len) {
     uint16_t l = 0;
@@ -112,8 +112,8 @@ uint16_t CMD_ReadData(uint8_t* dat, uint16_t len) {
 }
 
 /**
- * »ñÈ¡CMD»º´æÊı¾İµÄ´óĞ¡
- * @return ·µ»ØÊı¾İ³¤¶È
+ * è·å–CMDç¼“å­˜æ•°æ®çš„å¤§å°
+ * @return è¿”å›æ•°æ®é•¿åº¦
  */
 uint16_t CMD_DataSize(void) {
     uint16_t len = FIFO_Length(&CMD_RecFIFO);
@@ -121,9 +121,9 @@ uint16_t CMD_DataSize(void) {
 }
 
 /**
-	* ¿ØÖÆÌ¨´òÓ¡¿É±ä²ÎÊı×Ö·û´®.
-	* @param  fomat: ²ÎÊıÁĞ±í.
-	* @param  ...:¿É±ä²ÎÊı
+	* æ§åˆ¶å°æ‰“å°å¯å˜å‚æ•°å­—ç¬¦ä¸².
+	* @param  fomat: å‚æ•°åˆ—è¡¨.
+	* @param  ...:å¯å˜å‚æ•°
 	*/
 void CMD_Printf(char* format, ...) {
     char* pBuf = NULL;
@@ -139,9 +139,9 @@ void CMD_Printf(char* format, ...) {
 }
 
 /**
- * ¿ØÖÆÌ¨´òÓ¡HEXÊı¾İ
- * @param dat  Êı¾İÖ¸Õë
- * @param len  Êı¾İµÄ³¤¶È
+ * æ§åˆ¶å°æ‰“å°HEXæ•°æ®
+ * @param dat  æ•°æ®æŒ‡é’ˆ
+ * @param len  æ•°æ®çš„é•¿åº¦
  */
 void CMD_HEX_Print(uint8_t* dat, uint16_t len) {
     uint16_t line, rem, i, pos = 0;
@@ -153,7 +153,7 @@ void CMD_HEX_Print(uint8_t* dat, uint16_t len) {
         if (pBuf != NULL) {
             for (i = 0; i < line; i++) {
                 rem = len - pos;
-                /*Ò»ĞĞ×î¶à16¸ö×Ö*/
+                /*ä¸€è¡Œæœ€å¤š16ä¸ªå­—*/
                 if (rem > 16) {
                     rem = 16;
                 }
@@ -168,9 +168,9 @@ void CMD_HEX_Print(uint8_t* dat, uint16_t len) {
 }
 
 /**
-	* ¿ØÖÆÌ¨´òÓ¡¿É±ä²ÎÊı×Ö·û´®,¸ù¾İÓÅÏÈµÈ¼¶¾ö¶¨ÊÇ·ñ´òÓ¡
-	* @param  fomat: ²ÎÊıÁĞ±í.
-	* @param  ...:¿É±ä²ÎÊı
+	* æ§åˆ¶å°æ‰“å°å¯å˜å‚æ•°å­—ç¬¦ä¸²,æ ¹æ®ä¼˜å…ˆç­‰çº§å†³å®šæ˜¯å¦æ‰“å°
+	* @param  fomat: å‚æ•°åˆ—è¡¨.
+	* @param  ...:å¯å˜å‚æ•°
 	*/
 void CMD_Printf_Level(uint8_t level, char* format, ...) {
     char* pBuf = NULL;
@@ -188,9 +188,9 @@ void CMD_Printf_Level(uint8_t level, char* format, ...) {
 }
 
 /**
- * ¿ØÖÆÌ¨´òÓ¡HEXÊı¾İ,¸ù¾İÓÅÏÈµÈ¼¶¾ö¶¨ÊÇ·ñ´òÓ¡
- * @param dat  Êı¾İÖ¸Õë
- * @param len  Êı¾İµÄ³¤¶È
+ * æ§åˆ¶å°æ‰“å°HEXæ•°æ®,æ ¹æ®ä¼˜å…ˆç­‰çº§å†³å®šæ˜¯å¦æ‰“å°
+ * @param dat  æ•°æ®æŒ‡é’ˆ
+ * @param len  æ•°æ®çš„é•¿åº¦
  */
 void CMD_HEX_Print_Level(uint8_t level, uint8_t* dat, uint16_t len) {
     if (level > 0 && level <= g_ucDbgLevel) {
@@ -199,8 +199,8 @@ void CMD_HEX_Print_Level(uint8_t level, uint8_t* dat, uint16_t len) {
 }
 
 /**
- * ¿ØÖÆÌ¨ÉèÖÃ»ØÏÔ¿ª¹Ø
- * @param en »ØÏÔÊ¹ÄÜ¿ª¹Ø
+ * æ§åˆ¶å°è®¾ç½®å›æ˜¾å¼€å…³
+ * @param en å›æ˜¾ä½¿èƒ½å¼€å…³
  */
 void CMD_SetEchoEnable(BOOL en) {
     if (en != CMD_EchoEnable) {
@@ -211,7 +211,7 @@ void CMD_SetEchoEnable(BOOL en) {
 }
 
 /**
- * ¿ØÖÆÌ¨ÉèÖÃ´òÓ¡ĞÅÏ¢µÈ¼¶
+ * æ§åˆ¶å°è®¾ç½®æ‰“å°ä¿¡æ¯ç­‰çº§
  * @param level
  */
 void CMD_SetDebugLevel(uint8_t level) {
@@ -223,7 +223,7 @@ void CMD_SetDebugLevel(uint8_t level) {
 }
 
 /**
- * ´®¿Ú¿ÕÏĞÊı¾İ¶Á³ö.
+ * ä¸²å£ç©ºé—²æ•°æ®è¯»å‡º.
  */
 void CMD_UART_Read_Poll(void) {
     int num = 0;
@@ -233,7 +233,7 @@ void CMD_UART_Read_Poll(void) {
     for (num = 1; num <= UART_PORT_MAX; num++) {
         len = UART_DataSize(num);
         if (len > 0) {
-            /*´®¿ÚÎªÃüÁîĞĞÕ¼ÓÃµÄ´®¿ÚÊ±½«Êı¾İ·¢Íù´¦Àí¶ÓÁĞ*/
+            /*ä¸²å£ä¸ºå‘½ä»¤è¡Œå ç”¨çš„ä¸²å£æ—¶å°†æ•°æ®å‘å¾€å¤„ç†é˜Ÿåˆ—*/
             if (num == CMD_Pipe) {
                 buf = MMEMORY_ALLOC(len + 1);
                 if (buf != NULL) {
@@ -243,7 +243,7 @@ void CMD_UART_Read_Poll(void) {
                     MMEMORY_FREE(buf);
                 }
             }
-            /*´¦ÀíÓÃ»§µÇÂ¼*/
+            /*å¤„ç†ç”¨æˆ·ç™»å½•*/
             else {
                 pos = CMD_UART_IsLogin(num);
                 if (pos >= 0) {
@@ -261,29 +261,29 @@ void CMD_UART_Read_Poll(void) {
 }
 
 /**
- * ¿ØÖÆÌ¨½ÓÊÕµ½ĞÂµÄÊı¾İ
- * @param pipe  ¹ÜµÀºÅ
- * @param dat   Êı¾İÖ¸Õë
- * @param len   Êı¾İµÄ³¤¶È
+ * æ§åˆ¶å°æ¥æ”¶åˆ°æ–°çš„æ•°æ®
+ * @param pipe  ç®¡é“å·
+ * @param dat   æ•°æ®æŒ‡é’ˆ
+ * @param len   æ•°æ®çš„é•¿åº¦
  */
 void CMD_NewData(uint8_t pipe, uint8_t* dat, uint16_t len) {
-    /*Êı¾İ´¦Àí*/
+    /*æ•°æ®å¤„ç†*/
     if (pipe == CMD_Pipe) {
-        /*Êä³ö»ØÏÔ*/
+        /*è¾“å‡ºå›æ˜¾*/
         if (CMD_EchoEnable != FALSE) {
             CMD_SendData(dat, len);
         }
         FIFO_Write(&CMD_RecFIFO, dat, len);
     }
-    /*µÇÂ¼´¦Àí*/
+    /*ç™»å½•å¤„ç†*/
     else {
         CMD_LoginProc(pipe, dat);
     }
 }
 
 /**
- * Ö´ĞĞĞéÄâÃüÁî
- * @param dat   Êı¾İÖ¸Õë
+ * æ‰§è¡Œè™šæ‹Ÿå‘½ä»¤
+ * @param dat   æ•°æ®æŒ‡é’ˆ
  */
 void CMD_Virtual(char* cmd) {
     if (cmd != NULL) {
@@ -295,7 +295,7 @@ void CMD_Virtual(char* cmd) {
 /* Private function prototypes -----------------------------------------------*/
 
 /**
- * ¿ØÖÆÌ¨´¦Àíº¯Êı£¬ÔÚÈÎÎñÖĞµ÷ÓÃÂÖÑ¯´¦ÀíĞÂµÄÏûÏ¢.
+ * æ§åˆ¶å°å¤„ç†å‡½æ•°ï¼Œåœ¨ä»»åŠ¡ä¸­è°ƒç”¨è½®è¯¢å¤„ç†æ–°çš„æ¶ˆæ¯.
  */
 static void CMD_ProcPoll(void) {
     uint16_t len = 0;
@@ -318,7 +318,7 @@ static void CMD_ProcPoll(void) {
                 MMEMORY_FREE(pbuf);
             }
         }
-        /*Òç³ö¹éÁã*/
+        /*æº¢å‡ºå½’é›¶*/
         if (len == CMD_FIFO_BUF_SIZE) {
             FIFO_Flush(&CMD_RecFIFO);
         }
@@ -326,8 +326,8 @@ static void CMD_ProcPoll(void) {
 }
 
 /**
- * ¿ØÖÆÌ¨½ÓÊÕµ½ĞÂµÄÊı¾İ
- * @param num ´®¿ÚºÅ
+ * æ§åˆ¶å°æ¥æ”¶åˆ°æ–°çš„æ•°æ®
+ * @param num ä¸²å£å·
  */
 static int CMD_UART_IsLogin(uint8_t num) {
     static char buffer[8];
@@ -353,10 +353,10 @@ static int CMD_UART_IsLogin(uint8_t num) {
 }
 
 /**
- * ¿ØÖÆÌ¨½ÓÊÕµ½ĞÂµÄÊı¾İ
- * @param pipe  ¹ÜµÀºÅ
- * @param dat   Êı¾İÖ¸Õë
- * @param len   Êı¾İµÄ³¤¶È
+ * æ§åˆ¶å°æ¥æ”¶åˆ°æ–°çš„æ•°æ®
+ * @param pipe  ç®¡é“å·
+ * @param dat   æ•°æ®æŒ‡é’ˆ
+ * @param len   æ•°æ®çš„é•¿åº¦
  */
 static void CMD_LoginProc(uint8_t pipe, uint8_t* dat) {
     char* p1 = (char*)dat;
@@ -388,10 +388,10 @@ static void CMD_LoginProc(uint8_t pipe, uint8_t* dat) {
 }
 
 /**
- * ¿ØÖÆÌ¨·¢ËÍÊı¾İ
- * @param pipe ¹ÜµÀºÅ
- * @param dat  ´ı·¢ËÍµÄÊı¾İÖ¸Õë
- * @param len  Êı¾İµÄ³¤¶È
+ * æ§åˆ¶å°å‘é€æ•°æ®
+ * @param pipe ç®¡é“å·
+ * @param dat  å¾…å‘é€çš„æ•°æ®æŒ‡é’ˆ
+ * @param len  æ•°æ®çš„é•¿åº¦
  */
 static void CMD_PipeSendData(uint8_t pipe, uint8_t* dat, uint16_t len) {
     if (pipe > 0) {
@@ -408,9 +408,9 @@ static void CMD_PipeSendData(uint8_t pipe, uint8_t* dat, uint16_t len) {
 }
 
 /**
- * ÏµÍ³µ÷ÊÔÃüÁî
- * @param argc ²ÎÊıÏîÊıÁ¿
- * @param argv ²ÎÊıÁĞ±í
+ * ç³»ç»Ÿè°ƒè¯•å‘½ä»¤
+ * @param argc å‚æ•°é¡¹æ•°é‡
+ * @param argv å‚æ•°åˆ—è¡¨
  */
 static void CMD_Console(int argc, char* argv[]) {
     uint32_t d = 0;

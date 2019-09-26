@@ -2,10 +2,10 @@
  * **********************************************************************
  *             Copyright (c) 2016 temp. All Rights Reserved.
  * @file mqtt_conn.h
- * @author ËÎÑô
+ * @author å®‹é˜³
  * @version V1.0
  * @date 2016.12.20
- * @brief MQTTÁ¬½Ó¹ÜÀíº¯ÊıÎÄ¼ş.
+ * @brief MQTTè¿æ¥ç®¡ç†å‡½æ•°æ–‡ä»¶.
  *
  * **********************************************************************
  * @note
@@ -25,22 +25,22 @@
 #include "MQTTClient.h"
 
 /* Exported define -----------------------------------------------------------*/
-/*MQTTµ÷ÊÔÊ¹ÄÜ*/
+/*MQTTè°ƒè¯•ä½¿èƒ½*/
 #define MQTT_DEBUG                      1
 
-/*Ğ­Òé´¦Àí»º´æ³¤¶È*/
+/*åè®®å¤„ç†ç¼“å­˜é•¿åº¦*/
 #define MQTT_TX_BUFF_SIZE               1024
 #define MQTT_RX_BUFF_SIZE               1024
 
-/*MQTTÊı¾İ·¢ËÍµÄ³¬Ê±Ê±¼ä£¬µ¥Î»ºÁÃë*/
+/*MQTTæ•°æ®å‘é€çš„è¶…æ—¶æ—¶é—´ï¼Œå•ä½æ¯«ç§’*/
 #define MQTT_TIMEOUT_DEF                3000
 
-/*MQTTµÄĞÄÌø°ü¼ä¸ô,Êµ¼Ê·¢ËÍ¼ä¸ôÎªÉèÖÃÖµµÄÒ»°ë£¬µ¥Î»Ãë*/
+/*MQTTçš„å¿ƒè·³åŒ…é—´éš”,å®é™…å‘é€é—´éš”ä¸ºè®¾ç½®å€¼çš„ä¸€åŠï¼Œå•ä½ç§’*/
 #define MQTT_PING_INVT_DEF              60
 
-/*Á¬½ÓÊ§°ÜÖØĞÂ¼øÈ¨µÄÊ§°Ü´ÎÊı*/
+/*è¿æ¥å¤±è´¥é‡æ–°é‰´æƒçš„å¤±è´¥æ¬¡æ•°*/
 #define CONNECT_FAIL_REAUTH             5
-/*Á¬½ÓÊ§°Ü³¬Ê±Ê±¼ä,µ¥Î»Ãë*/
+/*è¿æ¥å¤±è´¥è¶…æ—¶æ—¶é—´,å•ä½ç§’*/
 #define CONNECT_FAIL_TIMEOUT            30
 
 #define MQTT_TASK_STK_SIZE              1024
@@ -49,7 +49,7 @@
 
 /* Exported types ------------------------------------------------------------*/
 
-/*MQTTÁ¬½Ó²ÎÊı*/
+/*MQTTè¿æ¥å‚æ•°*/
 typedef struct
 {
     char  *MQTT_Server;
@@ -59,13 +59,13 @@ typedef struct
     char  *MQTT_PassWord;
 } MQTT_ConnParam_t;
 
-/*MQTT¶©ÔÄ»Øµ÷º¯ÊıÀàĞÍ*/
+/*MQTTè®¢é˜…å›è°ƒå‡½æ•°ç±»å‹*/
 typedef void (*Arrived_t)(uint8_t *data, uint16_t len);
 
-/*MQTTÈÎÎñ»Øµ÷º¯Êı*/
+/*MQTTä»»åŠ¡å›è°ƒå‡½æ•°*/
 typedef void (*MQTT_TaskPollFun)(void);
 
-/*MQTTÏûÏ¢Êı¾İ»Øµ÷º¯Êı*/
+/*MQTTæ¶ˆæ¯æ•°æ®å›è°ƒå‡½æ•°*/
 typedef void (*MQTT_MsgDataFun)(char *topic,  uint8_t *payload, uint16_t len);
 
 /* Exported constants --------------------------------------------------------*/

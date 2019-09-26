@@ -2,10 +2,10 @@
  * **********************************************************************
  *             Copyright (c) 2016 temp. All Rights Reserved.
  * @file M4G.h
- * @author ËÎÑô
+ * @author å®‹é˜³
  * @version V1.0
  * @date 2016.4.1
- * @brief M4GÇı¶¯º¯ÊıÍ·ÎÄ¼ş.
+ * @brief M4Gé©±åŠ¨å‡½æ•°å¤´æ–‡ä»¶.
  *
  * **********************************************************************
  * @note
@@ -33,13 +33,13 @@
 #define M4G_SEND_MAX_SIZE          1500
 #define M4G_RECEIVE_MAX_SIZE       2048
 
-/*M4GÊ¡µçÊ¹ÄÜ£¬Ê¹ÄÜºóµ±M4G³¤Ê±¼äÎ´Á¬ÍøÊ±¹Ø»ú*/
+/*M4Gçœç”µä½¿èƒ½ï¼Œä½¿èƒ½åå½“M4Gé•¿æ—¶é—´æœªè¿ç½‘æ—¶å…³æœº*/
 #define M4G_POWER_SAVE_EN          0
 
-/*M4GÊ¡µç¹Ø»úµÄÊ±¼ä£¬µ¥Î»Ãë*/
+/*M4Gçœç”µå…³æœºçš„æ—¶é—´ï¼Œå•ä½ç§’*/
 #define M4G_POWER_SAVE_TIME        60
 
-/*¶¨ÒåM4GÄ£¿é¿ØÖÆÑ¡Ïî*/
+/*å®šä¹‰M4Gæ¨¡å—æ§åˆ¶é€‰é¡¹*/
 #define M4G_OPT_RESET              0x01
 #define M4G_OPT_SET_SOCKET         0x04
 #define M4G_OPT_SET_APN            0x08
@@ -66,6 +66,7 @@ void M4G_Init(void);
 void M4G_ReStart(void);
 void M4G_SetOnOff(BOOL onoff);
 M4G_Status_t M4G_ReadStatus(void);
+void M4G_ManagerPoll(void);
 
 int16_t M4G_SocketSendData(uint8_t *data, uint16_t len);
 int8_t M4G_IsSocketConnect(void);

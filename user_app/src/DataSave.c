@@ -82,7 +82,7 @@ void WorkParam_Init(void) {
         /*初始化mqtt参数*/
         strcpy(WorkParam.mqtt.MQTT_Server, MQTT_SERVER_DEF);
         WorkParam.mqtt.MQTT_Port = MQTT_PORT_DEF;
-        strcpy(WorkParam.mqtt.MQTT_ClientID, "PAD08-000000");
+        strcpy(WorkParam.mqtt.MQTT_ClientID, MQTT_CLIENT_ID_DEF);
         strcpy(WorkParam.mqtt.MQTT_UserName, MQTT_USER_DEF);
         strcpy(WorkParam.mqtt.MQTT_UserPWD, MQTT_PWD_DEF);
         WorkParam.mqtt.MQTT_Timout = MQTT_TIMEOUT_DEF;

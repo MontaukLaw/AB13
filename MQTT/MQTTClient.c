@@ -39,7 +39,7 @@ static int sendPacket(MQTTClient *c, int length, Timer *timer)
         sent += rc;
     }
     if (sent == length) {
-        //±ÜÃâ°¢ÀïÔÆpingÌ«¶ÌÁ¬½Ó²»³É¹¦ 20160912
+        //é¿å…é˜¿é‡Œäº‘pingå¤ªçŸ­è¿žæŽ¥ä¸æˆåŠŸ 20160912
         TimerCountdown(&c->ping_timer, c->keepAliveInterval / 2); // record the fact that we have successfully sent the packet
         rc = SUCESS;
     } else rc = FAILURE;

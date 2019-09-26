@@ -1371,12 +1371,6 @@
       <name>$PROJ_DIR$\..\user_app\src\Radio_A7139.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\user_app\src\RelayComProtocal.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\user_app\inc\RelayComProtocal.h</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\user_app\src\rtc_ext.c</name>
     </file>
     <file>

@@ -18,8 +18,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "user_comm.h"
+#include "EC20.h"
 
 /* Private typedef -----------------------------------------------------------*/
+
+#define EC20_AT_DEBUG  1
 /*TCPIP连接状态*/
 typedef enum {
     ip_status_initial = 0,
@@ -48,12 +51,16 @@ typedef struct {
 /* Private define ------------------------------------------------------------*/
 
 /* Private macros ------------------------------------------------------------*/
-#define M4G_PWR_ON()                   IO_L(M4G_EN)
-#define M4G_PWR_OFF()                  IO_H(M4G_EN)
+#define M4G_PWR_ON()                   IO_H(M4G_EN)
+#define M4G_PWR_OFF()                  IO_L(M4G_EN)
 
-#define M4G_KEY_ON()                   IO_L(M4G_PWRKEY)
-#define M4G_KEY_OFF()                  IO_H(M4G_PWRKEY)
+//#define M4G_KEY_ON()                   IO_L(M4G_PWRKEY)
+//#define M4G_KEY_OFF()                  IO_H(M4G_PWRKEY)
 
+// 由于电路设计的不同, 这里需要修改一下
+#define M4G_KEY_ON()                   IO_H(M4G_PWRKEY)
+#define M4G_KEY_OFF()                  IO_L(M4G_PWRKEY)
+    
 #define M4G_SEND_DATA(dat, len)        UART_SendData(M4G_UART_PORT, dat, len)
 #define M4G_SEND_AT(cmd)               UART_Printf(M4G_UART_PORT, "AT+%s\r\n", cmd)
 #define M4G_AT_PRINTF(format, ...)     UART_Printf(M4G_UART_PORT, "AT+"format"\r\n", ##__VA_ARGS__)
@@ -76,7 +83,6 @@ static uint8_t* pRspBuf = NULL;
 
 /* Private function prototypes -----------------------------------------------*/
 void M4G_Task(void const* argument);
-static void M4G_ManagerPoll(void);
 static void M4G_Intercept_Proc(void);
 static void M4G_TCPIP_ReceiveProc(char* pReceive);
 static void M4G_TCPIP_SendProc(void);
@@ -93,6 +99,7 @@ static BOOL ReadPhoneNum(char* num);
 static uint16_t TCPIP_Send(uint8_t* data, uint16_t len);
 static void TTS_Play(char* text);
 static char* WaitATRsp(char* token, uint16_t time);
+static char* GpsWaitATRsp(char* token, uint16_t time);
 static void M4G_Console(int argc, char* argv[]);
 
 /* Exported functions --------------------------------------------------------*/
@@ -100,14 +107,19 @@ static void M4G_Console(int argc, char* argv[]);
  * M4G驱动初始化
  */
 void M4G_Init(void) {
+    
     osMutexDef(M4G);
     M4G_MutexId = osMutexCreate(osMutex(M4G));
+    
     osMessageQDef(TCPIP_SendQ, M4G_SEND_Q_SIZE, void*);
     M4G_TCPIP_SendQId = osMessageCreate(osMessageQ(TCPIP_SendQ), NULL);
+
     osThreadDef(M4G, M4G_Task, M4G_TASK_PRIO, 0, M4G_TASK_STK_SIZE);
     osThreadCreate(osThread(M4G), NULL);
-    CMD_ENT_DEF(ec20, M4G_Console);
-    Cmd_AddEntrance(CMD_ENT(ec20));
+    
+    //CMD_ENT_DEF(ec20, M4G_Console);
+    //Cmd_AddEntrance(CMD_ENT(ec20));
+    
 #if M4G_CMD_EN > 0
     CMD_Pipe = CMD_Pipe_Register((CMD_SendFun)M4G_SocketSendData);
     DBG_LOG("M4G CMD pipe is %d.", CMD_Pipe);
@@ -124,7 +136,11 @@ void M4G_Task(void const* argument) {
     TWDT_ADD(M4GTask);
     TWDT_CLEAR(M4GTask);
     DBG_LOG("M4G task start.");
+    
+#if 1 == EC20_AT_DEBUG
     UART_SetRemapping(DEBUG, M4G_UART_PORT);
+#endif
+    
     while (1) {
         osDelay(5);
         TWDT_CLEAR(M4GTask);
@@ -293,10 +309,10 @@ void M4G_SetSocketParam(char* server, uint16_t port, Sock_RecCBFun callback) {
 /**
  * M4G管理轮询.
  */
-static void M4G_ManagerPoll(void) {
+void M4G_ManagerPoll(void) {
     static uint32_t tsNet = 0, tsConnect = 0, tsStatus = 0;
     /*错误重启管理*/
-    if (M4G_Param.ErrorCount > 10 || M4G_Param.ConnectFailCount > 10 || M4G_OPT(M4G_OPT_RESET)) {
+    if (M4G_Param.ErrorCount > 20 || M4G_Param.ConnectFailCount > 20 || M4G_OPT(M4G_OPT_RESET)) {
         M4G_OPT_CLEAR(M4G_OPT_RESET);
         M4G_Param.ErrorCount = 0;
         M4G_Param.ConnectFailCount = 0;
@@ -359,6 +375,7 @@ static void M4G_ManagerPoll(void) {
                 /*20秒未成功连接重连*/
                 if (TS_IS_OVER(tsConnect, 20000)) {
                     ConnectShut();
+//                    ConnectClose();
                     M4G_Param.IP_Status = ip_status_Closed;
                 }
                 if (TS_IS_OVER(tsStatus, 3000)) {
@@ -366,6 +383,7 @@ static void M4G_ManagerPoll(void) {
                     M4G_Param.IP_Status = GetIPStatus();
                     if (M4G_Param.IP_Status == ip_status_Closing) {
                         ConnectShut();
+//                        ConnectClose();
                     }
                 }
             default:
@@ -376,7 +394,8 @@ static void M4G_ManagerPoll(void) {
     else {
         M4G_Param.IP_Status = ip_status_initial;
     }
-    /*socket未使用时关机省电*/
+    
+  /*socket未使用时关机省电*/
 #if M4G_POWER_SAVE_EN > 0
     static uint32_t tsPowerSave = 0;
     if (M4G_Param.ConnectAddress != NULL) {
@@ -438,9 +457,9 @@ static void M4G_TCPIP_ReceiveProc(char* pReceive) {
         while (*p && *p++ != ',');
         len = uatoi(p);
         while (*p && *p++ != '\n');
-        DBG_LOG("test len:%d", len);
+        //DBG_LOG("test len:%d", len);
 #if M4G_CMD_EN > 0
-        CMD_NewData(CMD_Pipe, (uint8_t*)p, len);
+        //CMD_NewData(CMD_Pipe, (uint8_t*)p, len);
 #endif
         if (M4G_Param.callback != NULL) {
             M4G_Param.callback((uint8_t*)p, len);
@@ -481,7 +500,8 @@ static void M4G_TCPIP_SendProc(void) {
 static BOOL M4G_ModuleInit(void) {
     char* p = NULL;
     BOOL r = FALSE;
-    M4G_SEND_DATA("ATE1\r", 5);
+    //M4G_SEND_DATA("ATE1\r", 5);    
+    M4G_SEND_DATA("ATE0\r", 5);
     M4G_WAIT_ACK("OK", 100);
     M4G_SEND_DATA("ATV1\r", 5);
     M4G_WAIT_ACK("OK", 100);
@@ -513,6 +533,16 @@ static BOOL M4G_ModuleInit(void) {
             r = TRUE;
         }
     }
+    
+    /* config GPS module. */
+    M4G_SEND_AT("QGPSCFG=\"outport\",\"uartdebug\"");
+    GpsWaitATRsp("OK", 100);
+    M4G_SEND_AT("QGPSCFG=\"nmeasrc\",1");
+    GpsWaitATRsp("+QGPSCFG=", 1000);
+    //TurnOnGps();
+    
+    //DBG_LOG("4G module is running.");
+    //DBG_LOG("4G module is running.");
     return r;
 }
 
@@ -521,14 +551,21 @@ static BOOL M4G_ModuleInit(void) {
  */
 static BOOL M4G_ModulePowerOn(void) {
     BOOL r = FALSE;
-    /*掉电延时确保模块开机成功*/
+
+    char* test;
+    int i;
+
+    /*掉电延时确保模块开机成功*/    
     M4G_KEY_OFF();
     M4G_PWR_OFF();
     osDelay(1000);
     UART_SetBaudrate(M4G_UART_PORT, M4G_UART_BDR);
     M4G_PWR_ON();
     M4G_KEY_ON();
-    if (M4G_WAIT_ACK("RDY", 15000)) {
+    
+    UART_SetBaudrate(M4G_UART_PORT, M4G_UART_BDR);    
+
+    if (M4G_WAIT_ACK("RDY", 20000)) {
         M4G_KEY_OFF();
         if (M4G_ModuleInit()) {
             M4G_Param.status = M4G_status_poweron;
@@ -538,7 +575,7 @@ static BOOL M4G_ModulePowerOn(void) {
     } else {
         M4G_KEY_OFF();
         M4G_SEND_DATA("AT\r\n", 4);
-        M4G_WAIT_ACK("OK", 100);
+        M4G_WAIT_ACK("OK", 1000);
         M4G_SEND_DATA("AT\r\n", 4);
         if (M4G_WAIT_ACK("OK", 1000)) {
             M4G_AT_PRINTF("IPR=%d", M4G_UART_BDR);
@@ -562,6 +599,9 @@ static BOOL M4G_ModulePowerOn(void) {
         M4G_KEY_OFF();
         M4G_PWR_OFF();
     }
+    // else{
+    //     DBG_LOG("M4G module has SIM card ");
+    // }
     return r;
 }
 
@@ -777,13 +817,121 @@ static char* WaitATRsp(char* token, uint16_t time) {
 }
 
 /**
+ * M4G等待AT命令返回
+ * @param token 等待的token
+ * @param time  等待的最长时间
+ * @return 返回等待的token,超时返回NULL
+ */
+static char* GpsWaitATRsp(char* token, uint16_t time) 
+{
+    uint16_t len = 0;
+    uint32_t ts = 0;
+    char* psearch = NULL;
+    ts = HAL_GetTick();
+    while (HAL_GetTick() - ts <= time) {
+        len = UART_DataSize(M4G_UART_PORT);
+        if (len > 0 && UART_GetDataIdleTicks(M4G_UART_PORT) >= 10) {
+            /*避免未读出的语句影响后面的指令*/
+            if ((UART_QueryByte(M4G_UART_PORT, len - 1) == '\n' && UART_QueryByte(M4G_UART_PORT, len - 2) == '\r')
+                    || *token == '>'
+                    || UART_GetDataIdleTicks(M4G_UART_PORT) >= M4G_UART_REFRESH_TICK) {
+                if (len >= (M4G_RECEIVE_MAX_SIZE - 1)) {
+                    len = M4G_RECEIVE_MAX_SIZE - 1;
+                }
+                if (pRspBuf != NULL) {
+                    MMEMORY_FREE(pRspBuf);
+                    pRspBuf = NULL;
+                }
+                pRspBuf = MMEMORY_ALLOC(len + 1);
+                if (pRspBuf != NULL) {
+                    len = UART_ReadData(M4G_UART_PORT, pRspBuf, len);
+                    pRspBuf[len] = '\0';
+                    psearch = (char*)SearchMemData(pRspBuf, (uint8_t*)token, len, strlen(token));
+                    if (psearch != NULL || strstr((char*)pRspBuf, "ERROR")) {
+                        break;
+                    }
+                }
+            }
+        }
+        osDelay(2);
+    }
+    return psearch;
+}
+
+/**
+ * Description: Turn on gps engine on EC20.
+ * Parameter: None
+ * Return: TRUE - Success.
+           FALSE - Fail.
+ * Others: None
+ */
+BOOL TurnOnGps(void)
+{
+    char *p = NULL;
+    
+    M4G_SEND_AT("QGPS=1");
+    p = GpsWaitATRsp("OK", 2000);
+    
+//    M4G_SEND_AT("QGPSCFG=\"nmeasrc\",1");
+//    GpsWaitATRsp("+QGPSCFG=", 1000);
+    
+    if (NULL == p)
+    {
+        return FALSE;
+    }
+    
+    return TRUE;
+}
+
+/**
+ * Description: Turn off gps engine on EC20.
+ * Parameter: None
+ * Return: TRUE - Success.
+           FALSE - Fail.
+ * Others: None
+ */
+BOOL TurnoffGps(void)
+{
+    char *p = NULL;
+    
+    M4G_SEND_AT("QGPSEND");
+    p = GpsWaitATRsp("OK", 2000);
+    
+    if (NULL == p)
+    {
+        return FALSE;
+    }
+    
+    return TRUE;
+}
+
+/**
+ * Description: Get GPS message from EC20.
+ * Parameter: None
+ * Return: p - nmea0183 output.
+ * Others: None
+ */
+char* GetGpsFrame(void)
+{
+    char *p = NULL;
+    
+    M4G_SEND_AT("QGPSGNMEA=\"RMC\"");
+    p = GpsWaitATRsp("+QGPSGNMEA: ", 2000);
+    DBG_INFO("raw data:%s", p);
+    
+    return p;
+}
+
+/**
  * M4G调试命令
  * @param argc 参数项数量
  * @param argv 参数列表
  */
 static void M4G_Console(int argc, char* argv[]) {
+    char* p = NULL;
     argv++;
     argc--;
+    osMutexWait(M4G_MutexId, osWaitForever);
     if (strcmp(argv[0], "power") == 0) {
         if (strcmp(argv[1], "on") == 0) {
             M4G_PWR_ON();
@@ -811,11 +959,34 @@ static void M4G_Console(int argc, char* argv[]) {
             DBG_LOG("M4G read phonenum fail.");
         }
         MMEMORY_FREE(num);
-    } else if (strcmp(*argv, "test") == 0) {
-        argv++;
-        argc--;
-        osMutexWait(M4G_MutexId, osWaitForever);
-        if (strcmp(argv[0], "poweron") == 0) {
+    } 
+    else if (ARGV_EQUAL("gpscfg")) 
+    {
+        M4G_SEND_AT("QGPSCFG=\"outport\",\"uartdebug\"");
+        GpsWaitATRsp("+QGPSCFG=", 1000);
+        
+        M4G_SEND_AT("QGPS=1");
+        p = GpsWaitATRsp("OK", 2000);
+        DBG_LOG("gps cfg %s.", p);
+        
+        M4G_SEND_AT("QGPSCFG=\"nmeasrc\",1");
+        GpsWaitATRsp("+QGPSCFG=", 1000);
+        
+//        DBG_LOG("gps cfg %s.", p);
+    }
+    else if (ARGV_EQUAL("gps")) 
+    {
+        M4G_SEND_AT("QGPSGNMEA=\"RMC\"");
+        GpsWaitATRsp("+QGPSGNMEA:", 2000);
+//        M4G_SEND_AT("QGPSLOC=?");
+//        p = M4G_WAIT_TOKEN("+QGPSLOC:", 1000);
+        DBG_LOG("gprmc");
+    }
+//    else if (NULL != strstr(*argv, "test")) {
+//        argv++;
+//        argc--;
+//        osMutexWait(M4G_MutexId, osWaitForever);
+        else if (strcmp(argv[0], "poweron") == 0) {
             DBG_LOG("M4G test power on.");
             M4G_ModulePowerOn();
         } else if (strcmp(argv[0], "poweroff") == 0) {
@@ -848,6 +1019,6 @@ static void M4G_Console(int argc, char* argv[]) {
             DBG_LOG("ErrorCount set done.");
         }
         osMutexRelease(M4G_MutexId);
-    }
+//    }
 }
 

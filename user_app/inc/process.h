@@ -89,23 +89,10 @@ typedef struct {
 /* Exported functions --------------------------------------------------------*/
 void Process_Init(void);
 
-void Updata_Gameoff(uint8_t result);
 BOOL CMD_Updata(char* cmd, cJSON* desired);
 
 void Status_Updata(void);
-void Report_DoorStatus(char *str);
 
-BOOL GetRegisterData(uint16_t gaddr, uint16_t glen, uint8_t *gbuf);
-
-// 发送协议第一个包
-void sendFirstPackage(void);
-
-// 发送协议所有包.
-void sendRelayDataPackages(void);
-
-void sendPackageByMQTT(uint16_t packageLength, uint8_t packageNumber, uint8_t chickenHouseNumber);
-
-// void Report_Rope_RFID(char* rfid, uint8_t status, uint16_t voltage);
-// void Request_Price(char* rfid);
+BOOL publishReg(void);
 
 #endif
