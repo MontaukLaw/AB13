@@ -59,28 +59,33 @@
 
 /* Private define ------------------------------------------------------------*/
 
-#define LED_ERR_Pin GPIO_PIN_0
-#define LED_ERR_GPIO_Port GPIOA
-#define LED_NET_Pin GPIO_PIN_1
-#define LED_NET_GPIO_Port GPIOA
-#define W5500_CS_Pin GPIO_PIN_4
-#define W5500_CS_GPIO_Port GPIOA
-#define W5500_INT_Pin GPIO_PIN_4
-#define W5500_INT_GPIO_Port GPIOC
-#define W5500_RST_Pin GPIO_PIN_5
-#define W5500_RST_GPIO_Port GPIOC
+
+
 #define UART3_DE_Pin GPIO_PIN_1
 #define UART3_DE_GPIO_Port GPIOB
 #define SFLASH_CS_Pin GPIO_PIN_12
 #define SFLASH_CS_GPIO_Port GPIOB
 #define SFLASH_WP_Pin GPIO_PIN_6
 #define SFLASH_WP_GPIO_Port GPIOC
+      
+
+#define LED_ERR_Pin GPIO_PIN_0
+#define LED_ERR_GPIO_Port GPIOA
+#define LED_NET_Pin GPIO_PIN_1
+#define LED_NET_GPIO_Port GPIOA      
+#define W5500_CS_Pin GPIO_PIN_4
+#define W5500_CS_GPIO_Port GPIOA
+#define W5500_INT_Pin GPIO_PIN_4
+#define W5500_INT_GPIO_Port GPIOC
+#define W5500_RST_Pin GPIO_PIN_5
+#define W5500_RST_GPIO_Port GPIOC      
 #define RF_CS_Pin GPIO_PIN_7
 #define RF_CS_GPIO_Port GPIOC
 #define RF_GIO1_Pin GPIO_PIN_8
 #define RF_GIO1_GPIO_Port GPIOC
 #define RF_CKO_Pin GPIO_PIN_9
 #define RF_CKO_GPIO_Port GPIOC
+
 
 #define M2M_PWR_Pin GPIO_PIN_11
 #define M2M_PWR_GPIO_Port GPIOA
@@ -92,11 +97,14 @@
 #define RTC_IRQ_Pin GPIO_PIN_5
 #define RTC_IRQ_GPIO_Port GPIOB
 
+
+      
 #define M4G_PWRKEY_Pin GPIO_PIN_3
 #define M4G_PWRKEY_GPIO_Port GPIOC
 
 #define M4G_STATUS_Pin GPIO_PIN_11
 #define M4G_STATUS_GPIO_Port GPIOA
+      
 #define M4G_EN_Pin GPIO_PIN_8
 #define M4G_EN_GPIO_Port GPIOB
 

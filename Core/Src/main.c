@@ -479,14 +479,15 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LED_ERR_Pin|LED_NET_Pin|W5500_CS_Pin, GPIO_PIN_RESET);
+  //HAL_GPIO_WritePin(GPIOA, LED_ERR_Pin|LED_NET_Pin|W5500_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, W5500_RST_Pin|SFLASH_WP_Pin|RF_CS_Pin, GPIO_PIN_RESET);
+  //HAL_GPIO_WritePin(GPIOC, W5500_RST_Pin|SFLASH_WP_Pin|RF_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, UART3_DE_Pin|SFLASH_CS_Pin|WIFI_EN_Pin, GPIO_PIN_RESET);
-
+  //HAL_GPIO_WritePin(GPIOB, UART3_DE_Pin|SFLASH_CS_Pin|WIFI_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, UART3_DE_Pin|SFLASH_CS_Pin, GPIO_PIN_RESET);
+  
   /*Configure GPIO pin Output Level */
   //HAL_GPIO_WritePin(GPIOA, M2M_PWR_Pin|M2M_RESET_Pin, GPIO_PIN_SET);
 
@@ -495,13 +496,15 @@ static void MX_GPIO_Init(void)
   
   // 4G模块的电源先拉低
   HAL_GPIO_WritePin(GPIOB, M4G_EN_Pin, GPIO_PIN_RESET);  
-   
+  
+#if W5500_ENABLE     
   /*Configure GPIO pins : LED_ERR_Pin LED_NET_Pin */
   GPIO_InitStruct.Pin = LED_ERR_Pin|LED_NET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
 
   /*Configure GPIO pin : W5500_CS_Pin */
   GPIO_InitStruct.Pin = W5500_CS_Pin;
@@ -523,6 +526,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+#endif
+  
   /*Configure GPIO pin : UART3_DE_Pin */
   GPIO_InitStruct.Pin = UART3_DE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -531,7 +536,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(UART3_DE_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : SFLASH_CS_Pin WIFI_EN_Pin */
-  GPIO_InitStruct.Pin = SFLASH_CS_Pin|WIFI_EN_Pin;
+  GPIO_InitStruct.Pin = SFLASH_CS_Pin;
+  //GPIO_InitStruct.Pin = SFLASH_CS_Pin|WIFI_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
@@ -543,38 +549,39 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SFLASH_WP_GPIO_Port, &GPIO_InitStruct);
-
+  
+#if 0
   /*Configure GPIO pins : RF_GIO1_Pin RF_CKO_Pin */
   GPIO_InitStruct.Pin = RF_GIO1_Pin|RF_CKO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-#if 0
+
   /*Configure GPIO pins : M2M_PWR_Pin M2M_RESET_Pin */
   GPIO_InitStruct.Pin = M2M_PWR_Pin|M2M_RESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-#endif
+
   
   /*Configure GPIO pin : RTC_IRQ_Pin */
   GPIO_InitStruct.Pin = RTC_IRQ_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(RTC_IRQ_GPIO_Port, &GPIO_InitStruct);
-  
+#endif  
   // 4G模块的EN脚初始化
   GPIO_InitStruct.Pin = M4G_PWRKEY_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
  
   GPIO_InitStruct.Pin = M4G_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
   
 }
@@ -654,7 +661,7 @@ void StartDefaultTask(void const * argument)
         osDelay(2);
         CMD_UART_Read_Poll();
         UART_Refresh_Poll();
-        LED_FlashPoll();
+        //LED_FlashPoll();
         //DFU_Poll();
         //Control_Polling();
         TWDT_CLEAR(startTask);

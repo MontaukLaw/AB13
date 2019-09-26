@@ -135,7 +135,11 @@ BOOL DFU_HTTP_Download(char* host, char* path) {
 
 
 /* Private function prototypes -----------------------------------------------*/
+static void DFU_Console(int argc, char* argv[]) {
 
+}
+
+#if 0 
 /**
  * DFU????????
  * @param argc ??????????
@@ -187,3 +191,5 @@ static void DFU_Console(int argc, char* argv[]) {
 		DFU_HTTP_Download(argv[1], argv[2]);
 	}
 }
+
+#endif

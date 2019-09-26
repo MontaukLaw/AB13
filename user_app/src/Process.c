@@ -47,6 +47,7 @@ static void DataAnalysis(uint32_t messageid, cJSON *dis);
 static void DeviceQueryAnalysis(uint32_t messageid, cJSON *dis);
 
 void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus);
+BOOL publishData(char* cmd, cJSON* data);
 
 static void CmdHanldeLogic(void);
 void InquireTask(void* argument);
@@ -134,10 +135,10 @@ void InquireTask(void* argument) {
             //publishHeartBeat();
             if(change == 1)
             {
-                stateChangedUpdate(1,2); 
+                //stateChangedUpdate(1,2); 
                 change = 0;
             }else{
-                stateChangedUpdate(2,1);
+                //stateChangedUpdate(2,1);
                 change = 1;
             }
             //change=!change;
@@ -242,7 +243,7 @@ data:
 */
 BOOL publishHeartBeat(void){
     publishData("U0002", NULL);
-    
+    return TRUE;
 }
 
 // 先试着写一个publish包, 测试通过后后面再进行重新封包

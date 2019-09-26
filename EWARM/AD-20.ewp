@@ -1170,22 +1170,13 @@
   <group>
     <name>USER_APP</name>
     <file>
-      <name>$PROJ_DIR$\..\user_app\src\bc26.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\user_app\src\console.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\user_app\src\DataSave.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\user_app\src\dfu.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\user_app\src\EC20.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\user_app\src\http.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\user_app\src\MQTT_Conn.c</name>
@@ -1195,9 +1186,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\user_app\src\Process.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\user_app\src\Radio_A7139.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\user_app\src\rtc_ext.c</name>
@@ -1210,9 +1198,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\user_app\src\uart.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\user_app\src\wifi.c</name>
     </file>
   </group>
   <group>

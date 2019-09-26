@@ -29,8 +29,11 @@
 #define MQTT_DEBUG                      1
 
 /*协议处理缓存长度*/
-#define MQTT_TX_BUFF_SIZE               1024
-#define MQTT_RX_BUFF_SIZE               1024
+#define MQTT_TX_BUFF_SIZE               2048
+#define MQTT_RX_BUFF_SIZE               2048
+
+//#define MQTT_TX_BUFF_SIZE               1024
+//#define MQTT_RX_BUFF_SIZE               1024
 
 /*MQTT数据发送的超时时间，单位毫秒*/
 #define MQTT_TIMEOUT_DEF                3000
@@ -43,7 +46,8 @@
 /*连接失败超时时间,单位秒*/
 #define CONNECT_FAIL_TIMEOUT            30
 
-#define MQTT_TASK_STK_SIZE              1024
+#define MQTT_TASK_STK_SIZE              2048
+//#define MQTT_TASK_STK_SIZE              1024
 #define MQTT_TASK_PRIO                  osPriorityNormal
 #define MQTT_SEND_Q_SIZE                16
 
