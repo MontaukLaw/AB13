@@ -78,14 +78,11 @@ void WorkParam_Init(void) {
     if (WorkParam.version < 1) {
         DBG_LOG("Work version1 default.");
         WorkParam.version = 1;
+        
         /*初始化mqtt参数*/
         strcpy(WorkParam.mqtt.MQTT_Server, MQTT_SERVER_DEF);
         WorkParam.mqtt.MQTT_Port = MQTT_PORT_DEF;
-#if PRODUCT_CHOSE == 1
-        strcpy(WorkParam.mqtt.MQTT_ClientID, "PAD20-000000");
-#else
         strcpy(WorkParam.mqtt.MQTT_ClientID, "PAD08-000000");
-#endif
         strcpy(WorkParam.mqtt.MQTT_UserName, MQTT_USER_DEF);
         strcpy(WorkParam.mqtt.MQTT_UserPWD, MQTT_PWD_DEF);
         WorkParam.mqtt.MQTT_Timout = MQTT_TIMEOUT_DEF;

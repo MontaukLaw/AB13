@@ -627,6 +627,7 @@ void StartDefaultTask(void const * argument)
     /*初始化业务逻辑*/
     Process_Init();
     
+    // MQTT初始化
     MQTT_Conn_Init();
     // Control_Init();
     DBG_LOG("System Start!");

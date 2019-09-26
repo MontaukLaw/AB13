@@ -94,10 +94,12 @@
 
 #define M4G_PWRKEY_Pin GPIO_PIN_3
 #define M4G_PWRKEY_GPIO_Port GPIOC
+
 #define M4G_STATUS_Pin GPIO_PIN_11
 #define M4G_STATUS_GPIO_Port GPIOA
 #define M4G_EN_Pin GPIO_PIN_12
 #define M4G_EN_GPIO_Port GPIOA
+
 
 /* ########################## Assert Selection ############################## */
 /**

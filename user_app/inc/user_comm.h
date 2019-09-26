@@ -92,12 +92,20 @@
 #define VERSION             "AB-13_FM_V1.0"
 #define VERSION_HARDWARE    "AB-13_HD_V1.0"
 
+//这个案子根据文档, mqtt服务器信息如下:
 
 #define MQTT_TLS_EN         0
-#define MQTT_SERVER_DEF     "47.107.124.226"
+#define MQTT_SERVER_DEF     "115.233.220.92"
 #define MQTT_PORT_DEF       1883
-#define MQTT_USER_DEF       "guangxin"
-#define MQTT_PWD_DEF        "guangxin"
+#define MQTT_USER_DEF       "admin"
+#define MQTT_PWD_DEF        "public"
+
+
+//#define MQTT_TLS_EN         0
+//#define MQTT_SERVER_DEF     "47.107.124.226"
+//#define MQTT_PORT_DEF       1883
+//#define MQTT_USER_DEF       "guangxin"
+//#define MQTT_PWD_DEF        "guangxin"
 
 // #define MQTT_TLS_EN         0
 // #define MQTT_SERVER_DEF     "47.107.107.103"

@@ -1,5 +1,5 @@
 [DebugChecksum]
-Checksum=-999357396
+Checksum=-1746019322
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -105,15 +105,14 @@ SumSortOrder=0
 mode=0
 [Breakpoints2]
 Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\user_app\src\http.c}.198.7" 0 0 1 "" 0 "" 0
-Bp1=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\user_app\src\EC20.c}.544.13" 0 0 1 "" 0 "" 0
-Bp2=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\user_app\src\EC20.c}.484.5" 0 0 1 "" 0 "" 0
-Bp3=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\user_app\src\EC20.c}.324.21" 0 0 1 "" 0 "" 0
-Bp4=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\user_app\src\EC20.c}.321.21" 0 0 1 "" 0 "" 0
-Count=5
+Count=1
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
 Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
 [Aliases]
 Count=0
 SuppressDialog=0
@@ -131,6 +130,3 @@ ShowTiming=1
 Frequency=10000
 Probe0=I0
 ProbeSetup0=2 1 1 2 0 0
-[TermIOLog]
-LoggingEnabled=_ 0
-LogFile=_ ""
