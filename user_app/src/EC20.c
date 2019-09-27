@@ -21,8 +21,6 @@
 #include "EC20.h"
 
 /* Private typedef -----------------------------------------------------------*/
-
-#define EC20_AT_DEBUG  1
 /*TCPIP连接状态*/
 typedef enum {
     ip_status_initial = 0,
@@ -51,20 +49,11 @@ typedef struct {
 /* Private define ------------------------------------------------------------*/
 
 /* Private macros ------------------------------------------------------------*/
-//#define M4G_PWR_ON()                   IO_H(M4G_EN)
-//#define M4G_PWR_OFF()                  IO_L(M4G_EN)
+#define M4G_PWR_ON()                   IO_H(M4G_EN)
+#define M4G_PWR_OFF()                  IO_L(M4G_EN)
 
-#define M4G_PWR_ON()      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET)
-#define M4G_PWR_OFF()     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET)
-
-//#define M4G_KEY_ON()                   IO_L(M4G_PWRKEY)
-//#define M4G_KEY_OFF()                  IO_H(M4G_PWRKEY)
-
-// 由于电路设计的不同, 这里需要修改一下
-// #define M4G_KEY_ON()                   IO_H(M4G_PWRKEY)
-// #define M4G_KEY_OFF()                  IO_L(M4G_PWRKEY)
-#define M4G_KEY_OFF()    HAL_GPIO_WritePin(GPIOC, M4G_PWRKEY_Pin, GPIO_PIN_RESET)
-#define M4G_KEY_ON()     HAL_GPIO_WritePin(GPIOC, M4G_PWRKEY_Pin, GPIO_PIN_SET)
+#define M4G_KEY_ON()                   IO_H(M4G_PWRKEY)
+#define M4G_KEY_OFF()                  IO_L(M4G_PWRKEY)
 
 #define M4G_SEND_DATA(dat, len)        UART_SendData(M4G_UART_PORT, dat, len)
 #define M4G_SEND_AT(cmd)               UART_Printf(M4G_UART_PORT, "AT+%s\r\n", cmd)
@@ -142,9 +131,9 @@ void M4G_Task(void const* argument) {
     TWDT_CLEAR(M4GTask);
     DBG_LOG("M4G task start.");
     
-#if 1 == EC20_AT_DEBUG
+//#if 1 == EC20_AT_DEBUG
     UART_SetRemapping(DEBUG, M4G_UART_PORT);
-#endif
+//#endif
     
     while (1) {
         osDelay(5);
@@ -505,8 +494,9 @@ static void M4G_TCPIP_SendProc(void) {
 static BOOL M4G_ModuleInit(void) {
     char* p = NULL;
     BOOL r = FALSE;
-    M4G_SEND_DATA("ATE1\r", 5);    
-    //M4G_SEND_DATA("ATE0\r", 5);
+    // M4G_SEND_DATA("ATE1\r", 5);
+    // 取消回显
+    M4G_SEND_DATA("ATE0\r", 5);
     M4G_WAIT_ACK("OK", 100);
     M4G_SEND_DATA("ATV1\r", 5);
     M4G_WAIT_ACK("OK", 100);
@@ -538,17 +528,16 @@ static BOOL M4G_ModuleInit(void) {
             r = TRUE;
         }
     }
-#if 0
+    
     /* config GPS module. */
     M4G_SEND_AT("QGPSCFG=\"outport\",\"uartdebug\"");
     GpsWaitATRsp("OK", 100);
     M4G_SEND_AT("QGPSCFG=\"nmeasrc\",1");
-    
     GpsWaitATRsp("+QGPSCFG=", 1000);
-    //TurnOnGps();
-#endif    
-    //DBG_LOG("4G module is running.");
-    //DBG_LOG("4G module is running.");
+    TurnOnGps();
+    
+    DBG_LOG("4G module is run.");
+    
     return r;
 }
 
@@ -561,16 +550,13 @@ static BOOL M4G_ModulePowerOn(void) {
     char* test;
     int i;
 
-    /*掉电延时确保模块开机成功*/    
+    /*掉电延时确保模块开机成功*/
     M4G_KEY_OFF();
     M4G_PWR_OFF();
     osDelay(1000);
     UART_SetBaudrate(M4G_UART_PORT, M4G_UART_BDR);
     M4G_PWR_ON();
     M4G_KEY_ON();
-    
-    UART_SetBaudrate(M4G_UART_PORT, M4G_UART_BDR);    
-
     if (M4G_WAIT_ACK("RDY", 15000)) {
         M4G_KEY_OFF();
         if (M4G_ModuleInit()) {
@@ -582,6 +568,7 @@ static BOOL M4G_ModulePowerOn(void) {
         M4G_KEY_OFF();
         M4G_SEND_DATA("AT\r\n", 4);
         M4G_WAIT_ACK("OK", 1000);
+
         M4G_SEND_DATA("AT\r\n", 4);
         if (M4G_WAIT_ACK("OK", 1000)) {
             M4G_AT_PRINTF("IPR=%d", M4G_UART_BDR);
@@ -611,14 +598,10 @@ static BOOL M4G_ModulePowerOn(void) {
     return r;
 }
 
-static BOOL M4G_ModulePowerOff(void) {
-    M4G_PWR_OFF();
-    return TRUE;    
-}
 /**
  * M4G关机关电
  */
-static BOOL M4G_ModulePowerOffOld(void) {
+static BOOL M4G_ModulePowerOff(void) {
     BOOL r = FALSE;
     M4G_KEY_ON();
     if (M4G_WAIT_ACK("POWER DOWN", 3000)) {

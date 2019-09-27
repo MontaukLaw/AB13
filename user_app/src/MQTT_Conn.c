@@ -1,22 +1,3 @@
-
-/**
- * *********************************************************************
- *             Copyright (c) 2016 temp. All Rights Reserved.
- * @file protocols.c
- * @version V1.0
- * @date 2016.4.1
- * @brief 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷通讯协锟介函锟斤拷锟侥硷拷.
- *
- * *********************************************************************
- * @note
- *
- * *********************************************************************
- * @author 锟斤拷锟斤拷
- * 2016.12.30 锟斤拷锟接讹拷锟斤拷失锟斤拷锟斤拷锟斤拷
- */
-
-
-
 /* Includes ------------------------------------------------------------------*/
 #include "user_comm.h"
 
@@ -68,17 +49,11 @@ static void mqtt_Console(int argc, char* argv[]);
  * 协议处理初始化
  */
 void MQTT_Conn_Init(void) {
-    // 定义队列
     osMessageQDef(MQTT_SendQ, MQTT_SEND_Q_SIZE, void *);
-    // 获取mqtt的消息队列id
     MQTT_SendQId = osMessageCreate(osMessageQ(MQTT_SendQ), NULL);
-    // 设置任务栈
     osThreadDef(mqtt_conn, MQTT_Conn_Task, MQTT_TASK_PRIO, 0, MQTT_TASK_STK_SIZE);
-    // 创建任务
     osThreadCreate(osThread(mqtt_conn), NULL);
-    // 设置console入口
     CMD_ENT_DEF(mqtt, mqtt_Console);
-    // 增加console命令入口
     Cmd_AddEntrance(CMD_ENT(mqtt));
     DBG_LOG("MQTT Protocl init OK.");
 }
@@ -104,7 +79,6 @@ void MQTT_Conn_Task(void const* argument) {
     TWDT_ADD(mqttConTask);
     TWDT_CLEAR(mqttConTask);
     NetworkInit(&mNetwork);
-    // 初始化mqtt客户端
     MQTTClientInit(&mClient, &mNetwork, MQTT_TIMEOUT_DEF, txBuffer,
                    sizeof(txBuffer), rxBuffer, sizeof(rxBuffer));
     osDelay(1000);
@@ -143,9 +117,8 @@ BOOL MQTT_IsDataFlow(void) {
  */
 void messageArrived(MessageData* data) {
     int i = 0;
-    // 先打印一下订阅的主题发过来的消息.
 #if MQTT_DEBUG > 0
-    DBG_LOG("Receive New message: %.*s, payload:",
+    DBG_LOG("Receive New message%.*s, payload:",
             data->topicName->lenstring.len,
             data->topicName->lenstring.data);
 #if MQTT_DEBUG > 1
@@ -367,8 +340,7 @@ static void Manager_MQTT(void) {
                 DBG_LOG("MQTT Ping invter %d s", WorkParam.mqtt.MQTT_PingInvt / 2);
                 Connect_Fail = 0;
                 MQTT_ReSubscribe();
-                publishReg();
-                //Status_Updata();
+                Status_Updata();
             } else {
                 Connect_Fail++;
             }

@@ -73,7 +73,8 @@ void Process_Init(void) {
     Subscribe_MQTT(subscribeTopic, QOS2, ArrivePath);
     
     // xTaskCreate(InquireTask, "InquireTask", 256, NULL, osPriorityNormal, &Inquiretask);
-    if(xTaskCreate(&InquireTask, "InquireTask", 512, NULL, 3, &Inquiretask) != pdPASS)
+    
+    if(xTaskCreate(&InquireTask, "InquireTask", 1024, NULL, 3, &Inquiretask) != pdPASS)
         DBG_LOG("Create InquireAnalysis failure");
     else
         DBG_LOG("Create InquireAnalysis ok");
@@ -81,25 +82,12 @@ void Process_Init(void) {
     DBG_LOG("Process Start.");
 }
 
-/**
- * 
- *
- * 
- */
-void Updata_Gameoff(uint8_t result) {
-    cJSON* desired = NULL;
-    desired = cJSON_CreateObject();
-    if (desired != NULL) {
-        cJSON_AddStringToObject(desired, "messageid", playid);
-        cJSON_AddNumberToObject(desired, "result", result);
-        CMD_Updata("CMD-107", desired);
-    }
-}
 
 void InquireTask(void* argument) {
-    TWDT_DEF(PTask, 30000);
+    TWDT_DEF(PTask, 60000);
     TWDT_ADD(PTask);
     TWDT_CLEAR(PTask);
+    static uint8_t heatBeatCounter = 0;
     static uint8_t change = 0;
     static BOOL queryen = TRUE;
     static uint8_t  qchicken = 0;
@@ -127,23 +115,14 @@ void InquireTask(void* argument) {
         {
             cmdtick = HAL_GetTick();
             CmdHanldeLogic();
+            heatBeatCounter ++;
         }
-        if(TS_VOERFLOW(heartBeatTick, 10000)) 
-        {
-            heartBeatTick = HAL_GetTick();
-            DBG_LOG("heart beating");
-            //publishHeartBeat();
-            if(change == 1)
-            {
-                //stateChangedUpdate(1,2); 
-                change = 0;
-            }else{
-                //stateChangedUpdate(2,1);
-                change = 1;
-            }
-            //change=!change;
+        if(heatBeatCounter > 10){
+            //publishHeartBeat();  
+            DBG_LOG("living..");
+            heatBeatCounter = 0;
         }
-        
+            
         TWDT_CLEAR(PTask);
     }
 
@@ -160,17 +139,18 @@ void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus)
 {
     cJSON* data = NULL;
     data = cJSON_CreateObject(); 
-     
-    cJSON_AddNumberToObject(data, "targetStatus", targetStatus);
+    if(data !=NULL){ 
+        cJSON_AddNumberToObject(data, "targetStatus", targetStatus);
     
-    cJSON_AddNumberToObject(data, "initialStatus", initialStatus);  
+        cJSON_AddNumberToObject(data, "initialStatus", initialStatus);  
     
-    cJSON_AddStringToObject(data, "labelId", "1169159667509538816-MThjNTIxMTQt"); 
+        cJSON_AddStringToObject(data, "labelId", "1169159667509538816-MThjNTIxMTQt"); 
 
-    cJSON_AddNumberToObject(data, "dateTime", 1569511047000);     
-        
+        cJSON_AddNumberToObject(data, "dateTime", 1569511047000);     
+    }
     publishData("U1101",data);
 
+    cJSON_Delete(data); 
 }
 
 /**
@@ -181,6 +161,8 @@ void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus)
 void CmdHanldeLogic(void) {
     CmdTYPE_t newcmd, newtcmd;
     BOOL cret = FALSE;
+    
+    
   
 }
 
@@ -206,7 +188,7 @@ BOOL publishData(char* cmd, cJSON* data){
     if (root != NULL) {
      
         cJSON_AddStringToObject(root,"cmd", cmd);
-        cJSON_AddStringToObject(root, "msgId", msgId);
+        cJSON_AddStringToObject(root, "msgId", "9e847b5c7164429d907c387c7522b8f3");
         cJSON_AddStringToObject(root, "deviceId", WorkParam.mqtt.MQTT_ClientID);
         cJSON_AddStringToObject(root, "protocol", "DevCommon_1.0");
         cJSON_AddNumberToObject(root, "time", 1569484973000);
@@ -218,15 +200,14 @@ BOOL publishData(char* cmd, cJSON* data){
         s = cJSON_PrintUnformatted(root);
         if (s != NULL) {
             DBG_INFO("mqtt sent: data:%s", s);
-            ret = Publish_MQTT(publishTopic, QOS2, (uint8_t*)s, strlen(s));
-            
+            ret = Publish_MQTT(publishTopic, QOS2, (uint8_t*)s, strlen(s));           
             
             MMEMORY_FREE(s);
         }
         cJSON_Delete(root);       
     }
     // 尾巴改一下
-    changeMsgTatail();
+    // changeMsgTatail();
     return ret;
 }
 
@@ -311,6 +292,9 @@ BOOL CMD_Updata(char* cmd, cJSON * desired) {
 
 
 static void ArrivePath(uint8_t* dat, uint16_t len) {
+    cJSON* root = NULL, *msgid = NULL, *timestamp = NULL, *cmd = NULL, *desired = NULL, *deviceid = NULL, *child = NULL;;
+    DBG_INFO("ArrivePath ts:%u, data:%s", HAL_GetTick(), dat);  
+     
 }
 #if 0
 /**

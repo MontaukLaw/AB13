@@ -96,8 +96,6 @@
 #define WIFI_EN_GPIO_Port GPIOB
 #define RTC_IRQ_Pin GPIO_PIN_5
 #define RTC_IRQ_GPIO_Port GPIOB
-
-
       
 #define M4G_PWRKEY_Pin GPIO_PIN_3
 #define M4G_PWRKEY_GPIO_Port GPIOC
