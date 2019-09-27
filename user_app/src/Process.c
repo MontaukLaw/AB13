@@ -419,10 +419,13 @@ static void ArrivePath(uint8_t* dat, uint16_t len) {
 
 #endif
 
+void Status_Updata(void){
+    publishHeartBeat();
+}
 /**
  * 通讯板参数与状态上传
  */
-void Status_Updata(void) {
+void Status_Updata_OLD(void) {
     cJSON* desired = NULL;
     desired = cJSON_CreateObject();
     if (desired != NULL) {
