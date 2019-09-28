@@ -8,7 +8,7 @@
 #include "console.h"
 #include "common.h"
 
-#define BT_TASK_STK_SIZE          256
+#define BT_TASK_STK_SIZE          512
 #define BT_TASK_PRIO              osPriorityNormal
 #define BT_SEND_Q_SIZE            8
 

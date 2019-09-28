@@ -25,7 +25,7 @@ void bt_Init() {
     //osThreadDef(BT, BT_Task, BT_TASK_PRIO, 0, BT_TASK_STK_SIZE);
     //osThreadCreate(osThread(LAN), NULL);
     //if(xTaskCreate(&InquireTask, "InquireTask", 1024, NULL, 3, &Inquiretask) != pdPASS)    
-    if(xTaskCreate(&BT_Task, "BT_Task", BT_TASK_STK_SIZE, NULL, BT_TASK_PRIO, &BTtaskHandle) != pdPASS)
+    if(xTaskCreate(&BT_Task, "BT_Task", BT_TASK_STK_SIZE, NULL, osPriorityHigh, &BTtaskHandle) != pdPASS)
         DBG_LOG("Create BT_Task failure");
     else
         DBG_LOG("Create BT_Task ok");
@@ -49,16 +49,16 @@ void BT_Task(void* argument)
     TWDT_ADD(BTTask);
     TWDT_CLEAR(BTTask);
     uint8_t testCounter = 0;
-    uint32_t cmdtick = 0;
-    
-    while (1) {
-        osDelay(5);
-        TWDT_CLEAR(BTTask);
+    uint32_t btcmdtick = 0;
+    //BTtaskHandle = xQueueCreate(50, sizeof(CmdTYPE_t));
         
-        if(TS_VOERFLOW(cmdtick, 1000)) 
+    while (1) {
+        osDelay(1);
+        TWDT_CLEAR(BTTask);      
+        if(TS_VOERFLOW(btcmdtick, 1000)) 
         {
-            cmdtick = HAL_GetTick();
-            BTCmdHanlde();
+            btcmdtick = HAL_GetTick();
+            //BTCmdHanlde();
             
             testCounter ++;
         }
@@ -77,7 +77,7 @@ static void BTCmdHanlde(void)
 
 int16_t BT_SocketSendData(uint8_t* data, uint16_t len)
 {
-
+    return 0;
 }
 
 static void bt_Console(int argc, char* argv[])

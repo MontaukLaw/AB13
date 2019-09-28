@@ -57,7 +57,10 @@
 
 #define DEBUG_BACKUP        4
 
-#define UART_SP232_PORT     2
+//#define UART_SP232_PORT     2
+
+#define BT_TEST_PORT        4
+
 
 /*DEBUG 信息等级动态可设置使能*/
 #define LOG_LEVEL_DYNAMIC   1

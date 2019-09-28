@@ -529,14 +529,14 @@ static BOOL M4G_ModuleInit(void) {
             r = TRUE;
         }
     }
-    
+#if 0    
     /* config GPS module. */
     M4G_SEND_AT("QGPSCFG=\"outport\",\"uartdebug\"");
     GpsWaitATRsp("OK", 100);
     M4G_SEND_AT("QGPSCFG=\"nmeasrc\",1");
     GpsWaitATRsp("+QGPSCFG=", 1000);
     TurnOnGps();
-    
+#endif    
     DBG_LOG("4G module is run.");
     
     return r;

@@ -187,10 +187,20 @@ void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus)
  * @retval None
  */
 void CmdHanldeLogic(void) {
-    CmdTYPE_t newcmd, newtcmd;
-    BOOL cret = FALSE;
-    
-  
+    uint8_t  *wrxbuf = NULL;
+    uint16_t wuartrxdatalen = 0;
+    uint32_t wuartidleticks = 0;
+    uint32_t wsystick = 0;
+    wuartrxdatalen = UART_DataSize(BT_TEST_PORT);
+    wuartidleticks = UART_GetDataIdleTicks(BT_TEST_PORT);
+    if((wuartrxdatalen > 0) && (wuartidleticks >= UART_IDLETICKOVER)){
+         wrxbuf = MMEMORY_ALLOC(wuartrxdatalen);
+         if(wrxbuf != NULL) {
+             wuartrxdatalen = UART_ReadData(BT_TEST_PORT, wrxbuf, wuartrxdatalen);
+             MMEMORY_FREE(wrxbuf);
+             //DBG_LOG("Got something");
+         }    
+    }
 }
 
 char * msgId = "9e847b5c7164429d907c387c7522b8f3";

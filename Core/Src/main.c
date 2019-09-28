@@ -653,7 +653,7 @@ void StartDefaultTask(void const * argument)
     MQTT_Conn_Init();
     
     // 蓝牙模块任务
-    //bt_Init();
+    // bt_Init();
     
     /*初始化业务逻辑*/
     Process_Init();      
