@@ -26,7 +26,7 @@
 
 /* Exported define -----------------------------------------------------------*/
 /*MQTT调试使能*/
-#define MQTT_DEBUG                      1
+#define MQTT_DEBUG                      1 
 
 /*协议处理缓存长度*/
 #define MQTT_TX_BUFF_SIZE               2048

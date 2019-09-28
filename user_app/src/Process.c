@@ -82,6 +82,29 @@ void Process_Init(void) {
     DBG_LOG("Process Start.");
 }
 
+static cJSON* cjsonData = NULL;
+
+
+// 这个是ok的.
+
+void cmdTest(){
+    cjsonData = NULL;
+
+    cjsonData = cJSON_CreateObject(); 
+    if(cjsonData !=NULL){ 
+        
+        cJSON_AddNumberToObject(cjsonData, "targetStatus", 1);
+    
+        cJSON_AddNumberToObject(cjsonData, "initialStatus", 2);  
+    
+        cJSON_AddStringToObject(cjsonData, "labelId", "1169159667509538816-MThjNTIxMTQt"); 
+        
+        cJSON_AddNumberToObject(cjsonData, "dateTime", 1569484973000);     
+  
+        //cJSON_AddStringToObject(cjsonData, "test", "whatever"); 
+    }
+    publishData("U1101",cjsonData);
+}
 
 void InquireTask(void* argument) {
     TWDT_DEF(PTask, 60000);
@@ -127,11 +150,13 @@ void InquireTask(void* argument) {
         if(testSendCounter > 20){
             //publishHeartBeat();
             //stateChangedUpdate(1,2);
-            publishData("CMD-999",NULL);
+            // 经过测试, 下面的publish可用.
+            //publishData("CMD-999",NULL);
+            //cmdTest();
+            stateChangedUpdate(1,2);
             testSendCounter = 0;        
         }
-        
-            
+                    
         TWDT_CLEAR(PTask);
     }
 
@@ -155,11 +180,11 @@ void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus)
     
         cJSON_AddStringToObject(data, "labelId", "1169159667509538816-MThjNTIxMTQt"); 
 
-        cJSON_AddNumberToObject(data, "dateTime", 1569511047000);     
+        cJSON_AddNumberToObject(data, "dateTime", 1569484973000);     
     }
     publishData("U1101",data);
 
-    cJSON_Delete(data); 
+    //cJSON_Delete(data); 
 }
 
 /**
@@ -208,7 +233,8 @@ BOOL publishData(char* cmd, cJSON* data){
 
         s = cJSON_PrintUnformatted(root);
         if (s != NULL) {
-            DBG_INFO("mqtt sent: data:%s", s);
+            //DBG_INFO("Send q to mqtt: data:%s", s);
+            DBG_INFO("Sending q to mqtt");
             ret = Publish_MQTT(publishTopic, QOS2, (uint8_t*)s, strlen(s));           
             
             MMEMORY_FREE(s);
@@ -266,45 +292,12 @@ BOOL publishReg(void){
     return ret;
 }
 
-
-/**
- * 向服务器发送数据
- *
- * @param cmd     发送的命令
- * @param desired 子结构
- * @return 返回发送结果
- */
-BOOL CMD_Updata(char* cmd, cJSON * desired) {
-    BOOL ret = FALSE;
-    char* s = NULL;
-    // char msgidBuf[20];
-    cJSON* root = NULL;
-    root = cJSON_CreateObject();
-    if (root != NULL) {
-        // uitoa(HAL_GetTick(), msgidBuf);
-        // cJSON_AddStringToObject(root, "messageid", msgidBuf);
-        cJSON_AddNumberToObject(root, "messageid", HAL_GetTick());
-        cJSON_AddNumberToObject(root, "timestamp", RTC_ReadTick());
-        cJSON_AddStringToObject(root, "cmd", cmd);
-        cJSON_AddStringToObject(root, "deviceid", WorkParam.mqtt.MQTT_ClientID);
-        cJSON_AddItemToObjectCS(root, "desired", desired);
-        s = cJSON_PrintUnformatted(root);
-        if (s != NULL) {
-            DBG_INFO("CMD_Updata ts:%u,data:%s", HAL_GetTick(), s);
-            ret = Publish_MQTT(publishTopic, QOS0, (uint8_t*)s, strlen(s));
-            MMEMORY_FREE(s);
-        }
-        cJSON_Delete(root);
-    }
-    return ret;
-}
-
-
 static void ArrivePath(uint8_t* dat, uint16_t len) {
     cJSON* root = NULL, *msgid = NULL, *timestamp = NULL;
     root = cJSON_Parse((const char*)dat);
     DBG_LOG("New Msg");
-    //DBG_INFO("ArrivePath ts:%u, data:%s", HAL_GetTick(), dat);  
+    //DBG_INFO("ArrivePath ts:%u, data:%s", HAL_GetTick(), dat); 
+#if 0    
     if (root != NULL) 
     {
         msgid = cJSON_GetObjectItem(root, "msgId");
@@ -319,7 +312,7 @@ static void ArrivePath(uint8_t* dat, uint16_t len) {
         cJSON_Delete(root);          
     
     }  
-     
+#endif     
 }
 #if 0
 /**

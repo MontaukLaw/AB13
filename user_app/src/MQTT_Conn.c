@@ -153,7 +153,7 @@ int16_t MQTT_SendData(uint8_t* dat, uint16_t len) {
 #endif
 #if MQTT_DEBUG > 1
         if (rc != 0) {
-            DBG_LOG("MQTT send data, rc:%d", rc);
+            DBG_LOG("MQTT send data :::, rc:%d", rc);
         }
 #if MQTT_DEBUG > 2
         CMD_HEX_Print(dat, len);
@@ -355,6 +355,7 @@ static void Manager_MQTT(void) {
  */
 static void MQTT_SendPoll(void) {
     int rc = 0, fail = 0;
+    uint8_t retryTime = 3;
     char* top = NULL;
     osEvent evt;
     MQTTMessage* pmsg;
@@ -364,7 +365,22 @@ static void MQTT_SendPoll(void) {
         pmsg = evt.value.p;
         if (pmsg->payloadlen > 0) {
             top = (char*)pmsg->payload + pmsg->payloadlen;
+            Publish_Fail = 0;
             if (MQTT_IsConnected()) {
+                while(retryTime){
+                    retryTime -- ;
+                    if ((rc = MQTTPublish(&mClient, top, pmsg)) == SUCESS){
+                        DBG_LOG("Sent");
+                        retryTime = 0;
+                        Publish_Fail = 0;
+                    }else{
+                        Publish_Fail++;
+                        DBG_LOG("Send fail, try again");
+                    }
+                }
+
+                
+#if 0
                 if ((rc = MQTTPublish(&mClient, top, pmsg)) != SUCESS) {
                     Publish_Fail++;
                     fail++;
@@ -377,6 +393,8 @@ static void MQTT_SendPoll(void) {
                 CMD_HEX_Print(pmsg->payload, pmsg->payloadlen);
 #endif
 #endif
+                
+#endif                
             } else {
                 fail++;
 #if MQTT_DEBUG > 0
