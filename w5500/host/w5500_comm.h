@@ -2,10 +2,10 @@
  * **********************************************************************
  *             Copyright (c) 2016 temp. All Rights Reserved.
  * @file w5500_comm.h
- * @author ËÎÑô
+ * @author å®‹é˜³
  * @version V1.0
  * @date 2016.7.20
- * @brief W5500Ïà¹Øº¯ÊıÍ·ÎÄ¼ş.
+ * @brief W5500ç›¸å…³å‡½æ•°å¤´æ–‡ä»¶.
  *
  * **********************************************************************
  * @note
@@ -51,7 +51,7 @@
 #define DEFAULT_GW_ADDR    "192.168.1.1"
 #define DEFAULT_DNS_ADDR   "192.168.1.10"
 
-/*¶¨ÒåWIFIÄ£¿é¿ØÖÆÑ¡Ïî*/
+/*å®šä¹‰WIFIæ¨¡å—æ§åˆ¶é€‰é¡¹*/
 #define LAN_OPT_RESET               0x01
 #define LAN_OPT_SET_SOCKET          0x08
 #define LAN_OPT_SET_IPCONFIG        0x10

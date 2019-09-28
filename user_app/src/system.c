@@ -148,7 +148,11 @@ int16_t System_SockRecv(uint8_t* data, uint16_t len) {
     rc = FIFO_Read(&SockRecFIFO, data, len);
     osMutexRelease(SockRecMutexId);
     if (rc > 0) {
-        DBG_INFO("System_SockRecv len:%u", len);
+        // 长的输出, 短的就算了.
+        if(len>10){
+            DBG_INFO("System_SockRecv len:%u", len);
+        }
+        
     }
     if (rc == 0 && System_SockIsConnected(NULL, NULL) == -1) {
         rc = -1;

@@ -840,6 +840,7 @@ BOOL Cmd_AddEntrance(CmdEntrance_t* pEnt) {
 *******************************************************************************
 */
 void Cmd_Handle(char* cmd) {
+    
     int argc = 0;
     char* argv[CMD_ARGC_MAX + 1], *p = NULL;
     CmdEntrance_t* pEnt = firstEnt;
@@ -848,7 +849,7 @@ void Cmd_Handle(char* cmd) {
     }
     while (*cmd && !isgraph(*cmd)) {
         cmd++;
-    }
+    }    
     argc = 1;
     argv[0] = cmd;
     p = cmd;

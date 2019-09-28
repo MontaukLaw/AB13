@@ -111,14 +111,11 @@ void InquireTask(void* argument) {
     TWDT_ADD(PTask);
     TWDT_CLEAR(PTask);
     static uint8_t heatBeatCounter = 0;
-    static uint8_t change = 0;
-    static BOOL queryen = TRUE;
-    static uint8_t  qchicken = 0;
+
     static uint16_t upcrc = 0;
     static uint32_t qtick = 0, cmdtick = 0, heartBeatTick = 0;
-    static uint32_t qreadcount = 0;
-    static uint32_t idnumhex = 0;
-    static uint32_t nowrtc = 0;
+
+
     static uint8_t testSendCounter = 0;
     CmdHandle = xQueueCreate(50, sizeof(CmdTYPE_t));
     
@@ -148,12 +145,9 @@ void InquireTask(void* argument) {
             heatBeatCounter = 0;            
         }
         if(testSendCounter > 20){
-            //publishHeartBeat();
+
+            // 下面的测试用例没问题
             //stateChangedUpdate(1,2);
-            // 经过测试, 下面的publish可用.
-            //publishData("CMD-999",NULL);
-            //cmdTest();
-            stateChangedUpdate(1,2);
             testSendCounter = 0;        
         }
                     
@@ -195,7 +189,6 @@ void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus)
 void CmdHanldeLogic(void) {
     CmdTYPE_t newcmd, newtcmd;
     BOOL cret = FALSE;
-    
     
   
 }
@@ -292,7 +285,12 @@ BOOL publishReg(void){
     return ret;
 }
 
-static void ArrivePath(uint8_t* dat, uint16_t len) {
+static void ArrivePath(uint8_t* dat, uint16_t len)
+{
+    DBG_LOG("New Msg");
+}
+
+static void ArrivePath_old(uint8_t* dat, uint16_t len) {
     cJSON* root = NULL, *msgid = NULL, *timestamp = NULL;
     root = cJSON_Parse((const char*)dat);
     DBG_LOG("New Msg");

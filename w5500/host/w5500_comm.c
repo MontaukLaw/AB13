@@ -111,7 +111,6 @@ void w5500_Init(SPI_HandleTypeDef* handle) {
   DBG_LOG("LAN CMD pipe is %d.", LAN_Pipe);
 #endif
 
-
   CMD_ENT_DEF(LAN, LAN_Console);
   Cmd_AddEntrance(CMD_ENT(LAN));
 

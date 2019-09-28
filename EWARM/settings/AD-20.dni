@@ -1,5 +1,5 @@
 [DebugChecksum]
-Checksum=-1652747008
+Checksum=2006587035
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -107,7 +107,8 @@ mode=0
 Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\user_app\src\http.c}.198.7" 0 0 1 "" 0 "" 0
 Bp1=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\user_app\src\EC20.c}.1018.1" 0 0 1 "" 0 "" 0
 Bp2=_ 0 "EMUL_DATA" "timestamp->valuedouble" 0 0 0 0 4294967295
-Count=3
+Bp3=_ 0 "EMUL_DATA" "DEBUG_BACKUP" 0 0 0 0 4294967295
+Count=4
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""

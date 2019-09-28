@@ -1341,6 +1341,9 @@
   <group>
     <name>USER_APP</name>
     <file>
+      <name>$PROJ_DIR$\..\user_app\src\bt.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\user_app\src\console.c</name>
     </file>
     <file>

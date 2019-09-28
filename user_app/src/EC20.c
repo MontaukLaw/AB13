@@ -132,7 +132,8 @@ void M4G_Task(void const* argument) {
     DBG_LOG("M4G task start.");
     
 //#if 1 == EC20_AT_DEBUG
-    UART_SetRemapping(DEBUG, M4G_UART_PORT);
+    // UART_SetRemapping(DEBUG_BACKUP, M4G_UART_PORT);
+    // UART_SetRemapping(DEBUG_BACKUP, M4G_UART_PORT);
 //#endif
     
     while (1) {

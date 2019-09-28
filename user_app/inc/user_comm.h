@@ -37,6 +37,7 @@
 #include "bc26.h"
 // #include "gprs.h"
 // #include "ec20.h"
+#include "bt.h"
 
 #include "EC20.h"
 #include "cjson.h"
@@ -53,6 +54,8 @@
 /* Exported define -----------------------------------------------------------*/
 /*调试串口号，为0时关闭打印输出*/
 #define DEBUG               5
+
+#define DEBUG_BACKUP        4
 
 #define UART_SP232_PORT     2
 

@@ -4,7 +4,7 @@
  * Version : V1.0
  * Date    : 2012.4.25
  * Copy    :
- * Brief   : ÏîÄ¿¿âº¯ÊıÍ·ÎÄ¼ş¡£
+ * Brief   : é¡¹ç›®åº“å‡½æ•°å¤´æ–‡ä»¶ã€‚
  *******************************************************************************
  */
 
@@ -40,15 +40,15 @@
 #define CMD_ENT(cmd)  \
     &CmdEntrance_##cmd
 
-/*×Ö·û´®±È½Ï*/
+/*å­—ç¬¦ä¸²æ¯”è¾ƒ*/
 #define STR_EQUAL(des, token)   (strcmp((char*)des, (char*)token) == 0)
 #define STR_NEQUAL(des, token)  (strncmp((char*)des, (char*)token, strlen((char*)token)) == 0)
 
-/*²ÎÊı±È½Ï*/
+/*å‚æ•°æ¯”è¾ƒ*/
 #define ARGV_EQUAL(token)       (strcmp(argv[0], (char*)token) == 0)
 #define ARGV_LEGAL(argv)        (argv != NULL && isalnum(argv[0]))
 
-/*ÈÎÎñ¿´ÃÅ¹·ºê*/
+/*ä»»åŠ¡çœ‹é—¨ç‹—å®*/
 #define TWDT_DEF(name, up) \
     static stTaskWatchDog twdt_##name = {#name, TRUE, up, 0, NULL}
 
@@ -61,21 +61,21 @@
 #define TWDT_ONOFF(name, en)  \
     TaskWDG_OnOff(&twdt_##name, en)
 
-/*¼ì²éÊıÖµÊÇ·ñÎª2µÄÃİ´Î·½Öµ*/
+/*æ£€æŸ¥æ•°å€¼æ˜¯å¦ä¸º2çš„å¹‚æ¬¡æ–¹å€¼*/
 #define IS_POWER_OF_TWO(A) ( ((A) != 0) && ((((A) - 1) & (A)) == 0) )
 #define IS_WORD(A)         (A % 4 == 0)
 
-/*Î»²Ù×÷*/
+/*ä½æ“ä½œ*/
 #define BIT_SET(reg, bit)       (reg |= (1 << bit))
 #define BIT_CLEAR(reg, bit)     (reg &= ~(1 << bit))
 #define BIT_READ(reg, bit)      ((reg & (1 << bit)) >> bit)
 
-/*ÑÚÂë²Ù×÷*/
+/*æ©ç æ“ä½œ*/
 #define MASK_SET(reg, mask)      (reg |= (mask))
 #define MASK_CLEAR(reg, mask)    (reg &= (~(mask)))
 #define IS_MASK_SET(reg, mask)   (reg & mask)
 
-/*¶ÔÏó´óĞ¡*/
+/*å¯¹è±¡å¤§å°*/
 #define OBJ_LEN(obj)             (sizeof(obj))
 #define STRNCPY_OBJ(obj, str)    do{strncpy(obj, str, OBJ_LEN(obj)-1); obj[OBJ_LEN(obj) - 1] = 0;} while(0)
 
@@ -94,26 +94,26 @@
 //     TRUE = !0
 // } BOOL;
 
-/*»·ĞÎ¶ÓÁĞÀàĞÍ*/
+/*ç¯å½¢é˜Ÿåˆ—ç±»å‹*/
 typedef struct {
-    uint16_t front;            /*Í·Ö¸ÕëÆ«ÒÆÁ¿*/
-    uint16_t rear;             /*Î²Ö¸ÕëÆ«ÒÆÁ¿*/
-    uint16_t count;            /*ÔªËØ¼ÆÊıÆ÷*/
-    uint16_t lenth;            /*»º´æ³¤¶È*/
-    char *pbuf;                /*»º´æÖ¸Õë*/
-} CirQueue_TypeDef;            /*»·ĞÎ¶ÓÁĞ»º´æÀàĞÍ*/
+    uint16_t front;            /*å¤´æŒ‡é’ˆåç§»é‡*/
+    uint16_t rear;             /*å°¾æŒ‡é’ˆåç§»é‡*/
+    uint16_t count;            /*å…ƒç´ è®¡æ•°å™¨*/
+    uint16_t lenth;            /*ç¼“å­˜é•¿åº¦*/
+    char *pbuf;                /*ç¼“å­˜æŒ‡é’ˆ*/
+} CirQueue_TypeDef;            /*ç¯å½¢é˜Ÿåˆ—ç¼“å­˜ç±»å‹*/
 
-/*ÃüÁî´¦Àí»Øµ÷º¯ÊıÖ¸Õë*/
+/*å‘½ä»¤å¤„ç†å›è°ƒå‡½æ•°æŒ‡é’ˆ*/
 typedef void (*Cmd_CallBack)(int argc, char *argv[]);
 
-/*ÃüÁî´¦ÀíÈë¿Ú*/
+/*å‘½ä»¤å¤„ç†å…¥å£*/
 typedef struct CmdEntrance {
     char const *cmd;
     Cmd_CallBack pCB;
     struct CmdEntrance *next;
 } CmdEntrance_t;
 
-/* ¶àÈÎÎñ¿´ÃÅ¹·½á¹¹ */
+/* å¤šä»»åŠ¡çœ‹é—¨ç‹—ç»“æ„ */
 typedef struct TaskWatchDog {
     char *Name;
     BOOL Enable;
