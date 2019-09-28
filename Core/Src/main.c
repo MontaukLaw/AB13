@@ -133,11 +133,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-#if 0  
-  HAL_GPIO_WritePin(GPIOC, M4G_PWRKEY_Pin, GPIO_PIN_SET);
-  osDelay(1000);
-  HAL_GPIO_WritePin(GPIOC, M4G_PWRKEY_Pin , GPIO_PIN_RESET);
-#endif
   
   MX_DMA_Init();
   MX_USART2_UART_Init();

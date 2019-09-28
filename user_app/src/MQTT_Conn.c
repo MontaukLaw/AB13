@@ -52,7 +52,7 @@ void MQTT_Conn_Init(void) {
     osMessageQDef(MQTT_SendQ, MQTT_SEND_Q_SIZE, void *);
     MQTT_SendQId = osMessageCreate(osMessageQ(MQTT_SendQ), NULL);
     
-    osThreadDef(mqtt_conn, MQTT_Conn_Task, osPriorityAboveNormal, 0, MQTT_TASK_STK_SIZE);
+    osThreadDef(mqtt_conn, MQTT_Conn_Task, osPriorityHigh, 0, MQTT_TASK_STK_SIZE);
     //osThreadDef(mqtt_conn, MQTT_Conn_Task, MQTT_TASK_PRIO, 0, MQTT_TASK_STK_SIZE);
     osThreadCreate(osThread(mqtt_conn), NULL);
     CMD_ENT_DEF(mqtt, mqtt_Console);

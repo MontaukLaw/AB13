@@ -39,7 +39,7 @@
 #define MQTT_TIMEOUT_DEF                3000
 
 /*MQTT的心跳包间隔,实际发送间隔为设置值的一半，单位秒*/
-#define MQTT_PING_INVT_DEF              60
+#define MQTT_PING_INVT_DEF              120
 
 /*连接失败重新鉴权的失败次数*/
 #define CONNECT_FAIL_REAUTH             5

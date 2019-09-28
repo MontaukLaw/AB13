@@ -20,6 +20,20 @@
 #include "user_comm.h"
      
 /* Private typedef -----------------------------------------------------------*/
+     
+// U1101 - 状态变更即时上报     
+#define  STATUS_CHANGE   1
+
+#define MSG_LENGTH    18
+#define BT_MSG_HEAD  0xaa
+#define BT_MSG_TAIL 0xbb
+#define AFUIOT  0x5A
+#define STATUS_UPDATE        0x01   //     状态变更
+#define ERROR_WARNING        0x02   //     异常报警
+#define INVENTRY_UPDATE      0x03   //     盘库上报
+#define MOVEING_INTERFACE    0x05   //    移车接口
+#define BATTER_LOW           0xf1   //
+
 
 /* Private define ------------------------------------------------------------*/
 
@@ -74,7 +88,7 @@ void Process_Init(void) {
     
     // xTaskCreate(InquireTask, "InquireTask", 256, NULL, osPriorityNormal, &Inquiretask);
     
-    if(xTaskCreate(&InquireTask, "InquireTask", 1024, NULL, 3, &Inquiretask) != pdPASS)
+    if(xTaskCreate(&InquireTask, "InquireTask", 2028, NULL, 3, &Inquiretask) != pdPASS)
         DBG_LOG("Create InquireAnalysis failure");
     else
         DBG_LOG("Create InquireAnalysis ok");
@@ -181,13 +195,28 @@ void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus)
     //cJSON_Delete(data); 
 }
 
+// 协议分析
+// Enhanced ShockBurs 协议DPL模式
+const uint8_t PIPE0_RX_ADDRESS[RX_ADR_WIDTH]={0x78,0x78,0x78,0x78,0x78};
+u_int8_t msg[MSG_LENGTH] = { 0xaa, 0x5a, 0, 0, 0, 0, BATTER_LOW, 0, 0, 0, 0, 0,
+        0x01, 0, 0, 0x10, 0, 0xbb };
+
+uint8_t anylizeBTCmd(uint8_t* cmd, uint16_t cmdLength)
+{
+    
+    if(*cmd == 'U'){
+        return STATUS_CHANGE;    
+    }
+    return 0;
+         
+} 
 /**
  * @brief  设置命令处理逻辑
  * @note
  * @retval None
  */
 void CmdHanldeLogic(void) {
-    uint8_t  *wrxbuf = NULL;
+    uint8_t* wrxbuf = NULL;
     uint16_t wuartrxdatalen = 0;
     uint32_t wuartidleticks = 0;
     uint32_t wsystick = 0;
@@ -197,10 +226,19 @@ void CmdHanldeLogic(void) {
          wrxbuf = MMEMORY_ALLOC(wuartrxdatalen);
          if(wrxbuf != NULL) {
              wuartrxdatalen = UART_ReadData(BT_TEST_PORT, wrxbuf, wuartrxdatalen);
-             
+             //分析协议
+             switch(anylizeBTCmd(wrxbuf, wuartrxdatalen)){
+             case STATUS_CHANGE:
+                 if(MQTT_IsConnected){
+                     stateChangedUpdate(1,2);
+                 }
+                 break;
+             }
              MMEMORY_FREE(wrxbuf);
-             DBG_LOG("Got %s, length: %d" , wrxbuf, wuartrxdatalen);
+             //DBG_LOG("Got %s, length: %d" , wrxbuf, wuartrxdatalen);
              //DBG_LOG("Got something");
+             
+             
          }    
     }
 }
@@ -296,11 +334,32 @@ BOOL publishReg(void){
     }
     return ret;
 }
-
 static void ArrivePath(uint8_t* dat, uint16_t len)
 {
     DBG_LOG("New Msg");
 }
+#if 0
+cJSON* receiveRoot = NULL;
+cJSON* responseCmd = NULL;
+static void ArrivePath(uint8_t* dat, uint16_t len)
+{
+    receiveRoot = NULL,
+    receiveRoot = cJSON_Parse((const char*)dat);
+    if (receiveRoot != NULL) 
+    {
+        responseCmd = NULL;
+        responseCmd = cJSON_GetObjectItem(receiveRoot, "responseCmd");
+        if (responseCmd != NULL && responseCmd->type == cJSON_String){
+            DBG_LOG("responseCmd:%s", responseCmd->valuestring);
+            responseCmd = NULL;
+        }
+           
+    }
+        receiveRoot = NULL;
+    //DBG_LOG("New Msg");
+    
+}
+#endif
 
 static void ArrivePath_old(uint8_t* dat, uint16_t len) {
     cJSON* root = NULL, *msgid = NULL, *timestamp = NULL;
