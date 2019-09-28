@@ -31,7 +31,7 @@ static QueueHandle_t CmdHandle = NULL;
 // static CmdTYPE_t CmdType;
 // static SetCmd_t  SetCmd;
 uint8_t titi = 0;
-uint32_t unixTimeLong = 0;
+long unixTimeLong = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 static void ArrivePath(uint8_t* dat, uint16_t len);
@@ -96,6 +96,7 @@ void InquireTask(void* argument) {
     static uint32_t qreadcount = 0;
     static uint32_t idnumhex = 0;
     static uint32_t nowrtc = 0;
+    static uint8_t testSendCounter = 0;
     CmdHandle = xQueueCreate(50, sizeof(CmdTYPE_t));
     
     while(CmdHandle == NULL)
@@ -116,12 +117,20 @@ void InquireTask(void* argument) {
             cmdtick = HAL_GetTick();
             CmdHanldeLogic();
             heatBeatCounter ++;
+            testSendCounter ++;
         }
         if(heatBeatCounter > 10){
             //publishHeartBeat();  
             DBG_LOG("living..");
-            heatBeatCounter = 0;
+            heatBeatCounter = 0;            
         }
+        if(testSendCounter > 20){
+            //publishHeartBeat();
+            //stateChangedUpdate(1,2);
+            publishData("CMD-999",NULL);
+            testSendCounter = 0;        
+        }
+        
             
         TWDT_CLEAR(PTask);
     }
@@ -292,8 +301,24 @@ BOOL CMD_Updata(char* cmd, cJSON * desired) {
 
 
 static void ArrivePath(uint8_t* dat, uint16_t len) {
-    cJSON* root = NULL, *msgid = NULL, *timestamp = NULL, *cmd = NULL, *desired = NULL, *deviceid = NULL, *child = NULL;;
-    DBG_INFO("ArrivePath ts:%u, data:%s", HAL_GetTick(), dat);  
+    cJSON* root = NULL, *msgid = NULL, *timestamp = NULL;
+    root = cJSON_Parse((const char*)dat);
+    DBG_LOG("New Msg");
+    //DBG_INFO("ArrivePath ts:%u, data:%s", HAL_GetTick(), dat);  
+    if (root != NULL) 
+    {
+        msgid = cJSON_GetObjectItem(root, "msgId");
+        DBG_LOG("msgid:%s", msgid->valuestring); 
+        timestamp = cJSON_GetObjectItem(root, "time");
+        DBG_LOG("timestamp:%s", timestamp->string); 
+        if(timestamp != NULL && timestamp->type == cJSON_Number){
+            unixTimeLong = (long)timestamp->valuedouble;
+            DBG_LOG("timestamp:%f", unixTimeLong); 
+        }      
+
+        cJSON_Delete(root);          
+    
+    }  
      
 }
 #if 0
