@@ -197,7 +197,9 @@ void CmdHanldeLogic(void) {
          wrxbuf = MMEMORY_ALLOC(wuartrxdatalen);
          if(wrxbuf != NULL) {
              wuartrxdatalen = UART_ReadData(BT_TEST_PORT, wrxbuf, wuartrxdatalen);
+             
              MMEMORY_FREE(wrxbuf);
+             DBG_LOG("Got %s, length: %d" , wrxbuf, wuartrxdatalen);
              //DBG_LOG("Got something");
          }    
     }
