@@ -13,10 +13,10 @@
 #define BT_SEND_Q_SIZE            8
 
 #define BT_UART_BDR               115200
-#define BT_UART_REFRESH_TICK      200
+//#define BT_UART_REFRESH_TICK      200
 
 #define BT_SEND_MAX_SIZE          1500
-#define BT_RECEIVE_MAX_SIZE       2048
+//#define BT_RECEIVE_MAX_SIZE       2048
 
 #define BT_CMD_EN                  1
 

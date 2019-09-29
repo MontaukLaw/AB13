@@ -20,7 +20,8 @@
 #include "user_comm.h"
      
 /* Private typedef -----------------------------------------------------------*/
-     
+/* Private define ------------------------------------------------------------*/
+
 // U1101 - 状态变更即时上报     
 #define  STATUS_CHANGE   1
 
@@ -34,8 +35,9 @@
 #define MOVEING_INTERFACE    0x05   //    移车接口
 #define BATTER_LOW           0xf1   //
 
+#define BT_UART_REFRESH_TICK   500
 
-/* Private define ------------------------------------------------------------*/
+#define BT_RECEIVE_MAX_SIZE    512
 
 /* Private variables ---------------------------------------------------------*/
 static char subscribeTopic[36], publishTopic[36], playid[48];
@@ -60,10 +62,12 @@ static void UpAlarmParameter(uint8_t uanum, uint32_t umessageid);
 static void DataAnalysis(uint32_t messageid, cJSON *dis);
 static void DeviceQueryAnalysis(uint32_t messageid, cJSON *dis);
 
+static uint8_t anylizeBTCmd(uint8_t* cmd, uint16_t cmdLength);
+
 void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus);
 BOOL publishData(char* cmd, cJSON* data);
-
-static void CmdHanldeLogic(void);
+static void BT_Intercept_Proc(void);
+//static void CmdHanldeLogic(void);
 void InquireTask(void* argument);
 //发布心跳包
 BOOL publishHeartBeat(void);
@@ -88,7 +92,7 @@ void Process_Init(void) {
     
     // xTaskCreate(InquireTask, "InquireTask", 256, NULL, osPriorityNormal, &Inquiretask);
     
-    if(xTaskCreate(&InquireTask, "InquireTask", 2028, NULL, 3, &Inquiretask) != pdPASS)
+    if(xTaskCreate(&InquireTask, "InquireTask", 2000, NULL, 3, &Inquiretask) != pdPASS)
         DBG_LOG("Create InquireAnalysis failure");
     else
         DBG_LOG("Create InquireAnalysis ok");
@@ -125,7 +129,6 @@ void InquireTask(void* argument) {
     TWDT_ADD(PTask);
     TWDT_CLEAR(PTask);
     static uint8_t heatBeatCounter = 0;
-
     static uint16_t upcrc = 0;
     static uint32_t qtick = 0, cmdtick = 0, heartBeatTick = 0;
 
@@ -149,7 +152,7 @@ void InquireTask(void* argument) {
         if(TS_VOERFLOW(cmdtick, 1000)) 
         {
             cmdtick = HAL_GetTick();
-            CmdHanldeLogic();
+            //CmdHanldeLogic();
             heatBeatCounter ++;
             testSendCounter ++;
         }
@@ -164,10 +167,38 @@ void InquireTask(void* argument) {
             //stateChangedUpdate(1,2);
             testSendCounter = 0;        
         }
-                    
+        
+        BT_Intercept_Proc();            
         TWDT_CLEAR(PTask);
     }
 
+}
+
+/**
+ * M4G 串口数据监听处理
+ */
+static void BT_Intercept_Proc(void) {
+    uint8_t* pbuf = NULL;
+    uint16_t len = 0;
+    len = UART_DataSize(BT_TEST_PORT);
+    if (len == 0) {
+        return;
+    }
+    if ((UART_QueryByte(BT_TEST_PORT, len - 1) == BT_MSG_TAIL
+            && UART_QueryByte(BT_TEST_PORT, len - (MSG_LENGTH - 1)) == BT_MSG_HEAD && UART_GetDataIdleTicks(BT_TEST_PORT) >= 20)
+            || UART_GetDataIdleTicks(BT_TEST_PORT) >= BT_UART_REFRESH_TICK) {
+        if (len >= (BT_RECEIVE_MAX_SIZE - 1)) {
+            len = M4G_RECEIVE_MAX_SIZE - 1;
+        }
+        pbuf = MMEMORY_ALLOC(len + 1);
+        if (pbuf != NULL) {
+            len = UART_ReadData(BT_TEST_PORT, pbuf, len);
+            *(pbuf + len) = 0;
+                        
+            anylizeBTCmd(pbuf,len);
+            MMEMORY_FREE(pbuf);
+        }
+    }
 }
 
 /*
@@ -197,51 +228,37 @@ void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus)
 
 // 协议分析
 // Enhanced ShockBurs 协议DPL模式
-const uint8_t PIPE0_RX_ADDRESS[RX_ADR_WIDTH]={0x78,0x78,0x78,0x78,0x78};
-u_int8_t msg[MSG_LENGTH] = { 0xaa, 0x5a, 0, 0, 0, 0, BATTER_LOW, 0, 0, 0, 0, 0,
-        0x01, 0, 0, 0x10, 0, 0xbb };
+//const uint8_t PIPE0_RX_ADDRESS[RX_ADR_WIDTH]={0x78,0x78,0x78,0x78,0x78};
+//u_int8_t msg[MSG_LENGTH] = { 0xaa, 0x5a, 0, 0, 0, 0, BATTER_LOW, 0, 0, 0, 0, 0, 0x01, 0, 0, 0x10, 0, 0xbb };
+//测试用: Aa 01 00 00 71 00 00 08 00 00 00 00 00 00 2c 50 bb
+uint8_t msg[MSG_LENGTH] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-uint8_t anylizeBTCmd(uint8_t* cmd, uint16_t cmdLength)
+static uint8_t anylizeBTCmd(uint8_t* cmd, uint16_t cmdLength)
 {
-    
-    if(*cmd == 'U'){
-        return STATUS_CHANGE;    
+    if(cmdLength >= MSG_LENGTH){
+        // if(*cmd == BT_MSG_HEAD && *(cmd + MSG_LENGTH -1)== BT_MSG_TAIL && (cmd + 1)==)
+        // 包头尾已经校验过了
+        //if(*cmd == BT_MSG_HEAD)
+        //{
+            //DBG_LOG("ok");
+        //}
+        
+        if(*cmd == 'U'){
+           return STATUS_CHANGE;    
+        } 
     }
     return 0;
          
 } 
-/**
- * @brief  设置命令处理逻辑
- * @note
- * @retval None
- */
-void CmdHanldeLogic(void) {
-    uint8_t* wrxbuf = NULL;
-    uint16_t wuartrxdatalen = 0;
-    uint32_t wuartidleticks = 0;
-    uint32_t wsystick = 0;
-    wuartrxdatalen = UART_DataSize(BT_TEST_PORT);
-    wuartidleticks = UART_GetDataIdleTicks(BT_TEST_PORT);
-    if((wuartrxdatalen > 0) && (wuartidleticks >= UART_IDLETICKOVER)){
-         wrxbuf = MMEMORY_ALLOC(wuartrxdatalen);
-         if(wrxbuf != NULL) {
-             wuartrxdatalen = UART_ReadData(BT_TEST_PORT, wrxbuf, wuartrxdatalen);
-             //分析协议
-             switch(anylizeBTCmd(wrxbuf, wuartrxdatalen)){
-             case STATUS_CHANGE:
-                 if(MQTT_IsConnected){
-                     stateChangedUpdate(1,2);
-                 }
-                 break;
-             }
-             MMEMORY_FREE(wrxbuf);
-             //DBG_LOG("Got %s, length: %d" , wrxbuf, wuartrxdatalen);
-             //DBG_LOG("Got something");
-             
-             
-         }    
-    }
+
+void clearArray(uint8_t* arr,uint16_t length){
+    uint16_t i=0;
+    for(i=0; i<length; i++){
+        *(arr+i) = 0;
+    }    
 }
+
+
 
 char * msgId = "9e847b5c7164429d907c387c7522b8f3";
 char msgTail = 0x31;
@@ -527,7 +544,7 @@ void Status_Updata_OLD(void) {
         CMD_Updata("CMD-102", desired);
     }
 }
-
+#if 0
 /**
  * @brief  设置命令解析
  * @note
@@ -560,10 +577,13 @@ void DataAnalysis(uint32_t messageid, cJSON *dis) {
                     xQueueSend(CmdHandle, dcmdtype, portMAX_DELAY);
                     MMEMORY_FREE(dcmdtype);
                 }
+                
             }
         }
     }
 }
+
+
 
 /**
  * @brief  查询命令解析
@@ -622,6 +642,7 @@ static BOOL CMD_Confirm_Rsp(uint32_t ordermsgid, proret_t ret) {
     r = CMD_Updata("CMD-99", bodydesired);
     return r;
 }
+#endif
 
 static void process_Console(int argc, char* argv[]){
 

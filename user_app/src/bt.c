@@ -6,7 +6,6 @@ static osMessageQId BT_SendQId;
 
 static uint8_t BT_Pipe = 0;
 void BT_Task(void* argument);
-
 static void BTCmdHanlde();
 void InquireTask(void* argument);
 static void bt_Console(int argc, char* argv[]);
