@@ -81,7 +81,8 @@ static void M4G_Intercept_Proc(void);
 static void M4G_TCPIP_ReceiveProc(char* pReceive);
 static void M4G_TCPIP_SendProc(void);
 static BOOL M4G_ModuleInit(void);
-static BOOL M4G_ModulePowerOn(void);
+//static BOOL M4G_ModulePowerOn(void);
+
 static BOOL M4G_ModulePowerOff(void);
 static BOOL ConnectShut(void);
 static BOOL ConnectClose(void);
@@ -537,7 +538,7 @@ static BOOL M4G_ModuleInit(void) {
     GpsWaitATRsp("+QGPSCFG=", 1000);
     TurnOnGps();
 #endif    
-    DBG_LOG("4G module is run.");
+    DBG_LOG("4G module is running.");
     
     return r;
 }
@@ -545,7 +546,7 @@ static BOOL M4G_ModuleInit(void) {
 /**
  * M4G上电开机
  */
-static BOOL M4G_ModulePowerOn(void) {
+BOOL M4G_ModulePowerOn(void) {
     BOOL r = FALSE;
 
     char* test;

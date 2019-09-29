@@ -46,7 +46,7 @@
 /*连接失败超时时间,单位秒*/
 #define CONNECT_FAIL_TIMEOUT            30
 
-#define MQTT_TASK_STK_SIZE              2048
+#define MQTT_TASK_STK_SIZE              512
 //#define MQTT_TASK_STK_SIZE              1024
 #define MQTT_TASK_PRIO                  osPriorityNormal
 #define MQTT_SEND_Q_SIZE                16

@@ -106,7 +106,11 @@
 #define M4G_EN_Pin GPIO_PIN_8
 #define M4G_EN_GPIO_Port GPIOB
 
+#define BEEP_EN_Pin GPIO_PIN_8
+#define BEEP_EN_GPIO_Port GPIOC
 
+#define LED_Pin GPIO_PIN_11
+      
 /* ########################## Assert Selection ############################## */
 /**
   * @brief Uncomment the line below to expanse the "assert_param" macro in the 

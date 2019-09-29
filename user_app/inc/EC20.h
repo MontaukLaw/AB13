@@ -75,6 +75,7 @@ void M4G_SetSocketParam(char *server, uint16_t port, Sock_RecCBFun callback);
 uint8_t M4G_ReadRSSI(void);
 BOOL    M4G_ReadPhoneNum(char *num);
 
+BOOL M4G_ModulePowerOn(void); 
 BOOL M4G_TTS(char *text);
 
 #endif

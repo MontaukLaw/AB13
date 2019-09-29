@@ -29,10 +29,12 @@
 #define BT_MSG_HEAD  0xaa
 #define BT_MSG_TAIL 0xbb
 #define AFUIOT  0x5A
+
 #define STATUS_UPDATE        0x01   //     状态变更
-#define ERROR_WARNING        0x02   //     异常报警
+#define RFID_ERROR_WARNING   0x02   //     异常报警
 #define INVENTRY_UPDATE      0x03   //     盘库上报
 #define MOVEING_INTERFACE    0x05   //    移车接口
+
 #define BATTER_LOW           0xf1   //
 
 #define BT_UART_REFRESH_TICK   500
@@ -63,7 +65,7 @@ static void DataAnalysis(uint32_t messageid, cJSON *dis);
 static void DeviceQueryAnalysis(uint32_t messageid, cJSON *dis);
 
 static uint8_t anylizeBTCmd(uint8_t* cmd, uint16_t cmdLength);
-
+static void rfidErrorUpdate(uint8_t highByte, uint8_t lowByte);
 void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus);
 BOOL publishData(char* cmd, cJSON* data);
 static void BT_Intercept_Proc(void);
@@ -71,8 +73,10 @@ static void BT_Intercept_Proc(void);
 void InquireTask(void* argument);
 //发布心跳包
 BOOL publishHeartBeat(void);
-
+static uint16_t mqttOFFLineCounter;
 TaskHandle_t Inquiretask;
+//不应该出现在这儿, but...
+void beep(void);
 /* Exported functions --------------------------------------------------------*/
 
 /**
@@ -92,7 +96,7 @@ void Process_Init(void) {
     
     // xTaskCreate(InquireTask, "InquireTask", 256, NULL, osPriorityNormal, &Inquiretask);
     
-    if(xTaskCreate(&InquireTask, "InquireTask", 2000, NULL, 3, &Inquiretask) != pdPASS)
+    if(xTaskCreate(&InquireTask, "InquireTask", 512, NULL, 3, &Inquiretask) != pdPASS)
         DBG_LOG("Create InquireAnalysis failure");
     else
         DBG_LOG("Create InquireAnalysis ok");
@@ -123,6 +127,21 @@ void cmdTest(){
     }
     publishData("U1101",cjsonData);
 }
+
+void checkMqttStatus(void)
+{
+    if(MQTT_IsConnected() == FALSE){
+        mqttOFFLineCounter ++;
+    }else{
+        mqttOFFLineCounter = 0;
+    } 
+    
+    if(mqttOFFLineCounter > 3){       
+        M4G_ModulePowerOn();
+        mqttOFFLineCounter = 0;
+    }
+}
+
 
 void InquireTask(void* argument) {
     TWDT_DEF(PTask, 60000);
@@ -161,10 +180,12 @@ void InquireTask(void* argument) {
             DBG_LOG("living..");
             heatBeatCounter = 0;            
         }
-        if(testSendCounter > 20){
+        if(testSendCounter > 10){
 
             // 下面的测试用例没问题
             //stateChangedUpdate(1,2);
+            
+            checkMqttStatus();
             testSendCounter = 0;        
         }
         
@@ -201,6 +222,23 @@ static void BT_Intercept_Proc(void) {
     }
 }
 
+static void rfidErrorUpdate(uint8_t highByte, uint8_t lowByte)
+{
+    cJSON* data = NULL;
+    data = NULL;
+    data = cJSON_CreateObject(); 
+    uint16_t errorCode = (uint16_t)highByte << 8 || lowByte;
+    
+    if(data !=NULL){ 
+
+        cJSON_AddStringToObject(data, "labelId", "1169159667509538816-MThjNTIxMTQt"); 
+
+        cJSON_AddNumberToObject(data, "errorCode", errorCode);     
+    }
+    // 标签错误cmd是u1102
+    publishData("U1102",data);    
+}
+
 /*
 范例
 {"cmd": "U1101","msgId": "a41cc3a6a72c4eedb75d4b1ae66ee05a",
@@ -208,9 +246,11 @@ static void BT_Intercept_Proc(void) {
 1567565991504,"data": {  "targetStatus": 1,  
 "labelId": "1169159667509538816-MThjNTIxMTQt", "initialStatus": 2, "dateTime": 1567565991504}}
 */
+
 void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus)
 {
     cJSON* data = NULL;
+    data = NULL;
     data = cJSON_CreateObject(); 
     if(data !=NULL){ 
         cJSON_AddNumberToObject(data, "targetStatus", targetStatus);
@@ -230,11 +270,17 @@ void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus)
 // Enhanced ShockBurs 协议DPL模式
 //const uint8_t PIPE0_RX_ADDRESS[RX_ADR_WIDTH]={0x78,0x78,0x78,0x78,0x78};
 //u_int8_t msg[MSG_LENGTH] = { 0xaa, 0x5a, 0, 0, 0, 0, BATTER_LOW, 0, 0, 0, 0, 0, 0x01, 0, 0, 0x10, 0, 0xbb };
-//测试用: Aa 01 00 00 71 00 00 08 00 00 00 00 00 00 2c 50 bb
+//测试用: Aa 5A 00 00 71 00 00 08 00 00 00 00 00 00 2c 50 bb
+// 包头 厂商id 标签id4byte 电量 旧状态 新状态 错误码2byte 陀螺仪状态 上报类型 预留2byte rssi 校验和 包尾
+// 4种上报类型 0x01: 状态变更 0x02:	异常报警 0x03:盘库上报 0x05:移车上报
 uint8_t msg[MSG_LENGTH] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
+uint16_t reportTick =0;
+uint16_t lastReportTick = 0;
 static uint8_t anylizeBTCmd(uint8_t* cmd, uint16_t cmdLength)
 {
+    uint8_t oldState, newState;
+    uint8_t rfErrorHigh, rfErrorLow;
+    uint16_t timePassed = 0;
     if(cmdLength >= MSG_LENGTH){
         // if(*cmd == BT_MSG_HEAD && *(cmd + MSG_LENGTH -1)== BT_MSG_TAIL && (cmd + 1)==)
         // 包头尾已经校验过了
@@ -243,10 +289,54 @@ static uint8_t anylizeBTCmd(uint8_t* cmd, uint16_t cmdLength)
             //DBG_LOG("ok");
         //}
         
+        // 校验一下吧, 以防万一, 没毛病
+        if(*cmd == BT_MSG_HEAD && (*(cmd + MSG_LENGTH -1)== BT_MSG_TAIL) && (*(cmd + 1)== AFUIOT))
+        {
+            oldState = *(cmd + 7);
+            newState = *(cmd + 8);
+          
+            // 检查数据上报类型
+            switch(*(cmd + 12)){
+                // 状态异常
+            case STATUS_UPDATE:
+                if(MQTT_IsConnected()){
+                    // 5秒内不重复上报                                      
+                    if(HAL_GetTick() > lastReportTick){
+                        timePassed = HAL_GetTick() - lastReportTick;   
+                        if (timePassed > 5000){
+                            beep();
+                            DBG_LOG("Sendding update info, before: %d, now: %d",oldState, newState);
+                            stateChangedUpdate(oldState,newState);  
+                            lastReportTick = HAL_GetTick();
+                        }
+                    }                      
+                }
+                break;
+            // 标签预警    
+            case RFID_ERROR_WARNING:
+                rfErrorHigh = *(cmd + 9);
+                rfErrorLow= *(cmd + 10); 
+                if(MQTT_IsConnected()){
+                    if(HAL_GetTick() > lastReportTick){
+                        timePassed = HAL_GetTick() - lastReportTick;   
+                        if (timePassed > 5000){
+                            beep();
+                            DBG_LOG("Sendding rfid error,  %x%x",rfErrorHigh, rfErrorLow);
+                            rfidErrorUpdate(rfErrorHigh, rfErrorLow);                   
+                        }
+                    }    
+
+                }
+                break;
+            }
+            //DBG_LOG("My package");    
+            
+        }
         if(*cmd == 'U'){
-           return STATUS_CHANGE;    
+            return STATUS_CHANGE;    
         } 
     }
+    
     return 0;
          
 } 
@@ -257,8 +347,6 @@ void clearArray(uint8_t* arr,uint16_t length){
         *(arr+i) = 0;
     }    
 }
-
-
 
 char * msgId = "9e847b5c7164429d907c387c7522b8f3";
 char msgTail = 0x31;
@@ -300,6 +388,9 @@ BOOL publishData(char* cmd, cJSON* data){
             MMEMORY_FREE(s);
         }
         cJSON_Delete(root);       
+    }else
+    {
+           cJSON_Delete(data);  
     }
     // 尾巴改一下
     // changeMsgTatail();
@@ -708,6 +799,19 @@ static void process_Console(int argc, char* argv[]) {
     }
 }
 #endif
+
+void beep(void){
+    uint16_t i;
+    //for(i=0; i<500; i++){
+        // 蜂鸣器
+        HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_SET);  
+        osDelay(1000);
+        HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_RESET);
+        //osDelay(1);   
+    //}
+
+
+}
 
 // /**
 //  * 接收处理

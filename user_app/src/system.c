@@ -313,12 +313,19 @@ int8_t System_SockIsConnected(char** addr, uint16_t* port) {
     return ret;
 }
 
+void LED_FlashPoll(void){
+    if(MQTT_IsConnected()){
+        HAL_GPIO_WritePin(GPIOA, LED_Pin, GPIO_PIN_RESET); 
+    }else{
+        HAL_GPIO_WritePin(GPIOA, LED_Pin, GPIO_PIN_SET); 
+    }
 
+}
 /**
  * LED闪烁状态指示轮询
  * @author yang (2016/9/23)
  */
-void LED_FlashPoll(void) {
+void LED_FlashPoll_old(void) {
     int8_t err = 0;
     static uint32_t tsNET = 0, tsERR = 0, indexOn = 0, index = 0;
     LAN_Status_t statusLAN;

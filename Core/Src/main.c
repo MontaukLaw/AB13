@@ -74,7 +74,7 @@ DMA_HandleTypeDef hdma_uart4_tx;
 DMA_HandleTypeDef hdma_usart1_tx;
 DMA_HandleTypeDef hdma_usart2_tx;
 DMA_HandleTypeDef hdma_usart3_tx;
-
+TIM_HandleTypeDef htim3;
 osThreadId defaultTaskHandle;
 
 /* USER CODE BEGIN PV */
@@ -96,6 +96,8 @@ static void MX_I2C1_Init(void);
 static void MX_UART4_Init(void);
 static void MX_IWDG_Init(void);
 static void MX_CRC_Init(void);
+static void MX_TIM3_Init(void);
+
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -144,6 +146,8 @@ int main(void)
   MX_I2C1_Init();
   MX_UART4_Init();
   MX_IWDG_Init();
+  //MX_TIM3_Init();
+  
   //MX_CRC_Init();
   /* USER CODE BEGIN 2 */
   /* USER CODE END 2 */
@@ -272,6 +276,46 @@ static void MX_I2C1_Init(void)
   }
 
 }
+
+#if 0
+/* TIM3 init function */
+static void MX_TIM3_Init(void)
+{
+
+  TIM_MasterConfigTypeDef sMasterConfig;
+  TIM_OC_InitTypeDef sConfigOC;
+
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 0;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 0;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_OC_Init(&htim3) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sConfigOC.OCMode = TIM_OCMODE_TIMING;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_OC_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  HAL_TIM_MspPostInit(&htim3);
+
+}
+#endif
 
 /* IWDG init function */
 static void MX_IWDG_Init(void)
@@ -580,6 +624,20 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
   
+  // 蜂鸣器引脚
+  GPIO_InitStruct.Pin = BEEP_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  
+  
+  GPIO_InitStruct.Pin = LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
@@ -595,8 +653,8 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-
-  /* USER CODE BEGIN 5 */
+    uint16_t i = 0;
+    /* USER CODE BEGIN 5 */
     TWDT_DEF(startTask, 30000);
     TWDT_ADD(startTask);
     TWDT_CLEAR(startTask);
@@ -619,15 +677,18 @@ void StartDefaultTask(void const * argument)
     CMD_Init();
     System_Init();
     SFlash_Init(&hspi2);
+ 
+    HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_SET);  
+    osDelay(1000);
+    HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_RESET);
     
     // 外接时钟初始化
     //ExternRTC_Init(&hi2c1);
-    
     //DBG_LOG("SPI flash erase chip begin.");
     //SFlash_EraseChip();
     //DBG_LOG("SPI flash erase chip OK.");
-    
-    /*初始化系统功能*/
+
+     /*初始化系统功能*/
     WorkParam_Init();
     StartLog_Recoder();
     //HTTP_Init();
@@ -660,7 +721,7 @@ void StartDefaultTask(void const * argument)
         osDelay(2);
         CMD_UART_Read_Poll();
         UART_Refresh_Poll();
-        //LED_FlashPoll();
+        LED_FlashPoll();
         //DFU_Poll();
         //Control_Polling();
         TWDT_CLEAR(startTask);
