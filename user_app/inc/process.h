@@ -95,4 +95,10 @@ void Status_Updata(void);
 
 BOOL publishReg(void);
 
+void BT_Intercept_Proc(void);
+
+BOOL publishData(char *cmd, cJSON *data);
+
+void beep(void);
+
 #endif

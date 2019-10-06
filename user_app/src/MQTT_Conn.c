@@ -119,7 +119,7 @@ BOOL MQTT_IsDataFlow(void) {
 void messageArrived(MessageData* data) {
     int i = 0;
 #if MQTT_DEBUG > 0
-    DBG_LOG("Receive New message%.*s, payload:",
+    DBG_LOG("Receive New message%.*s, payload: ",
             data->topicName->lenstring.len,
             data->topicName->lenstring.data);
 #if MQTT_DEBUG > 1
@@ -147,6 +147,7 @@ int16_t MQTT_SendData(uint8_t* dat, uint16_t len) {
     if (System_SockIsConnected(NULL, NULL) > 0 && System_SockIsLock() == FALSE) {
         /*用于网络指示灯*/
         DataFlowCnt += 1;
+        //DBG_LOG("MQTT send data :::, rc:%d", rc);
 #if MQTT_TLS_EN
         rc = UserSSL_Write(dat, len);
 #else
@@ -371,6 +372,7 @@ static void MQTT_SendPoll(void) {
                 while(retryTime){
                     retryTime -- ;
                     if ((rc = MQTTPublish(&mClient, top, pmsg)) == SUCESS){
+                        DBG_LOG("Msg ready for send is : %s", pmsg->payload);
                         DBG_LOG("Sent");
                         retryTime = 0;
                         Publish_Fail = 0;
@@ -379,8 +381,7 @@ static void MQTT_SendPoll(void) {
                         DBG_LOG("Send fail, try again");
                     }
                 }
-
-                
+               
 #if 0
                 if ((rc = MQTTPublish(&mClient, top, pmsg)) != SUCESS) {
                     Publish_Fail++;

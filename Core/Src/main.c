@@ -109,6 +109,7 @@ void StartDefaultTask(void const * argument);
 
 /* USER CODE END 0 */
 
+
 /**
   * @brief  The application entry point.
   *
@@ -679,13 +680,21 @@ void StartDefaultTask(void const * argument)
     SFlash_Init(&hspi2);
  
     HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_SET);  
-    osDelay(1000);
+    osDelay(200);
     HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_RESET);
+    osDelay(200);
+    HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_SET); 
+    osDelay(200);
+    HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_RESET); 
+    osDelay(200);
+    HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_SET); 
+    osDelay(200);
+    HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_RESET); 
     
     // 外接时钟初始化
     //ExternRTC_Init(&hi2c1);
     //DBG_LOG("SPI flash erase chip begin.");
-    //SFlash_EraseChip();
+    SFlash_EraseChip();
     //DBG_LOG("SPI flash erase chip OK.");
 
      /*初始化系统功能*/
@@ -699,7 +708,7 @@ void StartDefaultTask(void const * argument)
     // TCP_Conn_Init();
     // ProtocolInit();
 
-    M4G_Init();    
+    M4G_Init();
     /*初始化外设驱动*/
     //WIFI_Init();
     //GPRS_Init();
@@ -709,10 +718,10 @@ void StartDefaultTask(void const * argument)
     MQTT_Conn_Init();
     
     // 蓝牙模块任务
-    // bt_Init();
+    bt_Init();
     
     /*初始化业务逻辑*/
-    Process_Init();      
+    Process_Init();
     
     // Control_Init();
     DBG_LOG("System Start!");
@@ -722,6 +731,7 @@ void StartDefaultTask(void const * argument)
         CMD_UART_Read_Poll();
         UART_Refresh_Poll();
         LED_FlashPoll();
+        //BT_Intercept_Proc();
         //DFU_Poll();
         //Control_Polling();
         TWDT_CLEAR(startTask);

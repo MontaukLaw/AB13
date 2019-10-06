@@ -59,7 +59,9 @@
 
 //#define UART_SP232_PORT     2
 
-#define BT_TEST_PORT        3
+//#define BT_TEST_PORT        3
+#define BT_TEST_PORT        4
+
 
 /*DEBUG 信息等级动态可设置使能*/
 #define LOG_LEVEL_DYNAMIC   1
@@ -104,8 +106,8 @@
 #define MQTT_PORT_DEF           1883
 #define MQTT_USER_DEF           "admin"
 #define MQTT_PWD_DEF            "public"
-#define MQTT_CLIENT_ID_DEF      "MHC000000000005"
-
+#define MQTT_CLIENT_ID_DEF      "M030057000000001"
+//#define MQTT_CLIENT_ID_DEF      "MHC000000000005"
 
 //#define MQTT_TLS_EN         0
 //#define MQTT_SERVER_DEF     "47.107.124.226"

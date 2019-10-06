@@ -193,7 +193,7 @@ M4G_Status_t M4G_ReadStatus(void) {
 int16_t M4G_SocketSendData(uint8_t* data, uint16_t len) {
     osStatus res = osOK;
     uint8_t* pBuf = NULL, *p = NULL;
-    if (len > M4G_SEND_MAX_SIZE) {
+    if (len > M4G_SEND_MAX_SIZE) {        
         len = M4G_SEND_MAX_SIZE;
     }
     if (M4G_Param.IP_Status == ip_status_Connected) {
@@ -205,6 +205,7 @@ int16_t M4G_SocketSendData(uint8_t* data, uint16_t len) {
             memcpy(p, data, len);
             res = osMessagePut(M4G_TCPIP_SendQId, (uint32_t)pBuf, 1000);
             if (res == osOK) {
+                DBG_LOG("M4G socket Send Q OK:%d, length is %d,", (int)res, len);
                 return len;
             } else {
                 DBG_LOG("M4G socket Send Q fault:%d", (int)res);

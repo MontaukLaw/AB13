@@ -800,7 +800,7 @@
         </option>
         <option>
           <name>JLinkSpeed</name>
-          <state>100</state>
+          <state>3000</state>
         </option>
         <option>
           <name>CCJLinkDoLogfile</name>
