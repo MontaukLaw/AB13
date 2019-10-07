@@ -73,7 +73,7 @@ TaskHandle_t Inquiretask;
 //不应该出现在这儿, but...
 //void beep(void);
 /* Exported functions --------------------------------------------------------*/
-uint8_t uuid[UUID_LENGTH+1];
+uint8_t uuid[UUID_LENGTH + 1];
 extern uint64_t timeStamp64;
 
 /**
@@ -91,7 +91,7 @@ void Process_Init(void) {
 	Cmd_AddEntrance(CMD_ENT(process));
 	// 这个服务器要求QoS2
 	//Subscribe_MQTT(subscribeTopic, QOS2, ArrivePath);
-    Subscribe_MQTT(subscribeTopic, QOS0, ArrivePath);
+	Subscribe_MQTT(subscribeTopic, QOS0, ArrivePath);
 	// xTaskCreate(InquireTask, "InquireTask", 256, NULL, osPriorityNormal, &Inquiretask);
 
 	if (xTaskCreate(&InquireTask, "InquireTask", 512, NULL, 3, &Inquiretask) != pdPASS)
@@ -146,7 +146,7 @@ void genUUID(void) {
 			break;
 		}
 	}
-    uuid[UUID_LENGTH] = '\0';
+	uuid[UUID_LENGTH] = '\0';
 }
 
 void checkMqttStatus(void) {
@@ -199,7 +199,10 @@ void InquireTask(void *argument) {
 			DBG_LOG("living..");
 			heatBeatCounter = 0;
 		}
-		if (testSendCounter > 10) {
+		if (testSendCounter > 35) {
+			if (MQTT_IsConnected()) {
+				publishHeartBeat();
+			}
 
 			// 下面的测试用例没问题
 			//stateChangedUpdate(1,2);
@@ -219,16 +222,6 @@ void clearArray(uint8_t *arr, uint16_t length) {
 	for (i = 0; i < length; i++) {
 		*(arr + i) = 0;
 	}
-}
-
-char *msgId = "9e847b5c7164429d907c387c7522b8f3";
-char msgTail = 0x31;
-void changeMsgTatail() {
-	if (msgTail == '9') {
-		msgTail = '0';
-	}
-	msgId[31] = msgTail;
-	msgTail++;
 }
 
 // 傻逼才写第三遍
@@ -289,8 +282,31 @@ BOOL publishData(char *cmd, cJSON *data) {
 
  */
 BOOL publishHeartBeat(void) {
-	DBG_LOG("Do nothing");
-	//publishData("U0002", NULL);
+	DBG_LOG("HeartBeat.");
+	BOOL ret = FALSE;
+	cJSON *root = NULL;
+	char *s = NULL;
+	root = cJSON_CreateObject();
+	if (root != NULL) {
+		//"cmd": "U0001"
+		genUUID();
+		cJSON_AddStringToObject(root, "cmd", "U0002");
+		cJSON_AddStringToObject(root, "msgId", uuid);
+		cJSON_AddStringToObject(root, "deviceId", WorkParam.mqtt.MQTT_ClientID);
+		cJSON_AddStringToObject(root, "protocol", "DevCommon_1.0");
+		if (timeStamp64 != 0) {
+			cJSON_AddNumberToObject(root, "time", timeStamp64);
+		} else {
+			cJSON_AddNumberToObject(root, "time", 1569484973000);
+		}
+
+		s = cJSON_PrintUnformatted(root);
+		if (s != NULL) {
+			ret = Publish_MQTT(publishTopic, QOS0, (uint8_t*) s, strlen(s));
+			MMEMORY_FREE(s);
+		}
+		cJSON_Delete(root);
+	}
 	return TRUE;
 }
 

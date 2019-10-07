@@ -342,7 +342,9 @@ static void Manager_MQTT(void) {
                 DBG_LOG("MQTT Ping invter %d s", WorkParam.mqtt.MQTT_PingInvt / 2);
                 Connect_Fail = 0;
                 MQTT_ReSubscribe();
-                Status_Updata();
+
+
+                //Status_Updata();
             } else {
                 Connect_Fail++;
             }
