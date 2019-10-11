@@ -29,6 +29,8 @@
 
 #define BATTER_LOW           0xf1   //
 
+#define DEVICE_ID_LENGTH   16
+
 /* Private variables ---------------------------------------------------------*/
 static char subscribeTopic[36], publishTopic[36], playid[48];
 // static uint32_t Report_ts = 0;
@@ -55,7 +57,8 @@ static void DeviceQueryAnalysis(uint32_t messageid, cJSON *dis);
 static uint8_t anylizeBTCmd(uint8_t *cmd, uint16_t cmdLength);
 
 uint32_t labelId;
-BOOL publishData(char *cmd, cJSON *data);
+//BOOL publishData(char *cmd, cJSON *data);
+BOOL publishData(char *cmd, cJSON *data, uint32_t deviceIdNmb);
 
 //static void rfidErrorUpdate(uint8_t highByte, uint8_t lowByte, uint32_t labelId);
 //static void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus,
@@ -103,27 +106,6 @@ void Process_Init(void) {
 }
 
 static cJSON *cjsonData = NULL;
-
-// 这个是ok的.
-
-void cmdTest() {
-	cjsonData = NULL;
-
-	cjsonData = cJSON_CreateObject();
-	if (cjsonData != NULL) {
-
-		cJSON_AddNumberToObject(cjsonData, "targetStatus", 1);
-
-		cJSON_AddNumberToObject(cjsonData, "initialStatus", 2);
-
-		cJSON_AddStringToObject(cjsonData, "labelId", "1169159667509538816-MThjNTIxMTQt");
-
-		cJSON_AddNumberToObject(cjsonData, "dateTime", 1569484973000);
-
-		//cJSON_AddStringToObject(cjsonData, "test", "whatever");
-	}
-	publishData("U1101", cjsonData);
-}
 
 void genUUID(void) {
 	uint8_t i = 0;
@@ -202,6 +184,9 @@ void InquireTask(void *argument) {
 		if (testSendCounter > 35) {
 			if (MQTT_IsConnected()) {
 				publishHeartBeat();
+                
+                //stateChangedUpdate(1, 2, 1);
+                
 			}
 
 			// 下面的测试用例没问题
@@ -223,10 +208,21 @@ void clearArray(uint8_t *arr, uint16_t length) {
 		*(arr + i) = 0;
 	}
 }
+// M030057000000001
+char deviceIDStr[DEVICE_ID_LENGTH + 1] = "M030057000000001";
 
-// 傻逼才写第三遍
-// 发现大同小异, desired变成data
-BOOL publishData(char *cmd, cJSON *data) {
+void transDeviceIDToStr(uint32_t deviceIdNmb) {
+	uint8_t i = 0;
+	uint8_t counter = 8;
+    if(deviceIdNmb>0){
+	    for (i = 8; i < DEVICE_ID_LENGTH; i++) {
+		    deviceIDStr[i] = (deviceIdNmb / pow(10, (counter - 1))) + 0x30;
+		    counter--;
+	    }
+    }
+}
+
+BOOL publishData(char *cmd, cJSON *data, uint32_t deviceIdNmb) {
 
 	BOOL ret = FALSE;
 	cJSON *root = NULL;
@@ -234,9 +230,10 @@ BOOL publishData(char *cmd, cJSON *data) {
 	root = cJSON_CreateObject();
 	if (root != NULL) {
 		genUUID();
+		transDeviceIDToStr(deviceIdNmb);
 		cJSON_AddStringToObject(root, "cmd", cmd);
 		cJSON_AddStringToObject(root, "msgId", uuid);
-		cJSON_AddStringToObject(root, "deviceId", WorkParam.mqtt.MQTT_ClientID);
+		cJSON_AddStringToObject(root, "deviceId", deviceIDStr);
 		cJSON_AddStringToObject(root, "protocol", "DevCommon_1.0");
 		if (timeStamp64 != 0) {
 			cJSON_AddNumberToObject(data, "time", timeStamp64);
@@ -266,8 +263,8 @@ BOOL publishData(char *cmd, cJSON *data) {
 		cJSON_Delete(data);
 
 	}
-	// 尾巴改一下
-	// changeMsgTatail();
+// 尾巴改一下
+// changeMsgTatail();
 	return ret;
 }
 
@@ -358,12 +355,12 @@ static void ArrivePath(uint8_t *dat, uint16_t len) {
 	char tail;
 	uint8_t i = 0;
 	uint16_t timeStampIndex;
-	// DBG_LOG("New Msg");
+// DBG_LOG("New Msg");
 	cJSON *root = NULL, *responseId = NULL, *timestamp = NULL, *responseCmd =
 	NULL;
 	DBG_INFO("ArrivePath data:%s", dat);
-	//tail = *(dat + len - 1);
-	//DBG_INFO("last char is %c", tail);
+//tail = *(dat + len - 1);
+//DBG_INFO("last char is %c", tail);
 	root = cJSON_Parse((const char*) dat);
 	if (root != NULL) {
 		responseCmd = cJSON_GetObjectItem(root, "responseCmd");
@@ -417,7 +414,7 @@ static void ArrivePath_old(uint8_t *dat, uint16_t len) {
 	cJSON *root = NULL, *msgid = NULL, *timestamp = NULL;
 	root = cJSON_Parse((const char*) dat);
 	DBG_LOG("New Msg");
-	//DBG_INFO("ArrivePath ts:%u, data:%s", HAL_GetTick(), dat);
+//DBG_INFO("ArrivePath ts:%u, data:%s", HAL_GetTick(), dat);
 #if 0    
     if (root != NULL) 
     {
@@ -748,12 +745,12 @@ static void process_Console(int argc, char* argv[]) {
 
 void beep(void) {
 	uint16_t i;
-	//for(i=0; i<500; i++){
-	// 蜂鸣器
+//for(i=0; i<500; i++){
+// 蜂鸣器
 	HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_SET);
 	osDelay(500);
 	HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_RESET);
-	//osDelay(1);
-	//}
+//osDelay(1);
+//}
 
 }

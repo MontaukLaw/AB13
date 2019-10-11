@@ -59,8 +59,8 @@
 
 //#define UART_SP232_PORT     2
 
-//#define BT_TEST_PORT        3
-#define BT_TEST_PORT        4
+#define BT_TEST_PORT        3
+//#define BT_TEST_PORT        4
 
 
 /*DEBUG 信息等级动态可设置使能*/

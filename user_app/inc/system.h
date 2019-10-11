@@ -24,7 +24,7 @@
 
 /* Exported define -----------------------------------------------------------*/
 /*定义网络模块使能*/
-#define NET_LAN_EN              0
+#define NET_LAN_EN              1
 #define NET_GPRS_EN             0
 #define NET_WIFI_EN             0
 #define NET_4G_EN               1

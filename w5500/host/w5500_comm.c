@@ -95,7 +95,6 @@ void w5500_Init(SPI_HandleTypeDef* handle) {
   osMutexDef(W5500);
   w5500_MutexId = osRecursiveMutexCreate(osMutex(W5500));
 
-
   reg_wizchip_cris_cbfunc(w5500_Mutex_get, w5500_Mutex_free);
   reg_wizchip_cs_cbfunc(w5500_cs_on, w5500_cs_off);
   reg_wizchip_spi_cbfunc(w5500_read_byte, w5500_write_byte);

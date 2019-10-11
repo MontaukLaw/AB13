@@ -34,7 +34,7 @@
 #define LAN_RECEIVE_MAX_SIZE        2048
 #define LAN_SEND_MAX_SIZE           1024
 
-#define LAN_CMD_EN                  1
+#define LAN_CMD_EN                  0
 
 #define LAN_NOT_CONNECT_TIMEOUT     300
 #define LAN_PHY_OFFLINE_TIMEOUT     600
