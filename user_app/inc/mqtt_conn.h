@@ -26,7 +26,7 @@
 
 /* Exported define -----------------------------------------------------------*/
 /*MQTT调试使能*/
-#define MQTT_DEBUG                      1 
+#define MQTT_DEBUG                      0 
 
 /*协议处理缓存长度*/
 #define MQTT_TX_BUFF_SIZE               2048
@@ -39,15 +39,15 @@
 #define MQTT_TIMEOUT_DEF                3000
 
 /*MQTT的心跳包间隔,实际发送间隔为设置值的一半，单位秒*/
-#define MQTT_PING_INVT_DEF              120
+#define MQTT_PING_INVT_DEF              70
 
 /*连接失败重新鉴权的失败次数*/
 #define CONNECT_FAIL_REAUTH             5
 /*连接失败超时时间,单位秒*/
 #define CONNECT_FAIL_TIMEOUT            30
 
-#define MQTT_TASK_STK_SIZE              512
-//#define MQTT_TASK_STK_SIZE              1024
+//#define MQTT_TASK_STK_SIZE              512
+#define MQTT_TASK_STK_SIZE              1024
 #define MQTT_TASK_PRIO                  osPriorityNormal
 #define MQTT_SEND_Q_SIZE                16
 

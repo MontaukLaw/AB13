@@ -19,7 +19,7 @@
           
           
           
-        <Column0>345</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+        <Column0>229</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
       </Workspace>
       <Disassembly>
         <col-names>
@@ -40,12 +40,12 @@
         
         
       <ColumnWidth0>439</ColumnWidth0><ColumnWidth1>94</ColumnWidth1><ColumnWidth2>854</ColumnWidth2><ColumnWidth3>379</ColumnWidth3></Find-in-Files>
-    <WATCH_1><expressions><item>bufferWriteIndex</item><item>dataRegAddr</item><item>highPos</item><item>WorkParam</item><item>gTxBuffer</item><item>allChickenHouseSetting</item><item>regDataBuffer</item><item>chickenHouseOnlineState</item><item>*(grxbuf + 3 + gi)</item><item>FAULT_REG_LIST_LENGTH</item><item>gcrc</item><item>arrLength</item><item>regDataPosSegmentStartAddr</item><item>regBufferIndex</item><item>packageNumber</item><item>faultArr</item><item>regDataBuffer</item><item>timestamp</item><item>unixTimeLong</item><item>cmd</item><item>*cmd</item><item>*(cmd+1)</item><item>*(cmd+16)</item><item>*(cmd+2)</item><item>*(cmd+3)</item><item>*(cmd+4)</item><item>*(cmd+15)</item><item>cmdLength</item><item>*(cmd+17)</item><item>cmdLength</item><item>*(cmd + 11)</item><item>*(cmd + 10)</item><item>*(cmd + 12)</item><item>testCounter</item><item>responseCmd</item><item>root</item><item>timestampArr</item><item>timeStamp64</item><item>uuid</item><item></item></expressions><col-names><item>Expression</item><item>Location</item><item>Type</item><item>Value</item></col-names><col-widths><item>206</item><item>118</item><item>100</item><item>212</item></col-widths></WATCH_1><Select-Ambiguous-Definitions><ColumnWidth0>664</ColumnWidth0><ColumnWidth1>94</ColumnWidth1><ColumnWidth2>1138</ColumnWidth2></Select-Ambiguous-Definitions></Static>
+    <WATCH_1><expressions><item>inventoryUpdateArr</item><item>dataRegAddr</item><item>highPos</item><item>info</item><item>gTxBuffer</item><item>allChickenHouseSetting</item><item>regDataBuffer</item><item>chickenHouseOnlineState</item><item>*(grxbuf + 3 + gi)</item><item>FAULT_REG_LIST_LENGTH</item><item>gcrc</item><item>arrLength</item><item>regDataPosSegmentStartAddr</item><item>regBufferIndex</item><item>packageNumber</item><item>faultArr</item><item>regDataBuffer</item><item>timestamp</item><item>unixTimeLong</item><item>infos</item><item>s</item><item>strlen(s)</item><item>root</item><item>*(cmd+2)</item><item>*(cmd+3)</item><item>*(cmd+4)</item><item>*(cmd+15)</item><item>cmdLength</item><item>*(cmd+17)</item><item>cmdLength</item><item>*(cmd + 11)</item><item>*(cmd + 10)</item><item>*(cmd + 12)</item><item>testCounter</item><item>responseCmd</item><item>root</item><item>timestampArr</item><item>timeStamp64</item><item>uuid</item><item>info</item><item>labelIDStandard</item><item>deviceIDNumber</item><item>labelIDStandard[15]</item><item/></expressions><col-names><item>Expression</item><item>Location</item><item>Type</item><item>Value</item></col-names><col-widths><item>206</item><item>118</item><item>100</item><item>314</item></col-widths></WATCH_1><Select-Ambiguous-Definitions><ColumnWidth0>664</ColumnWidth0><ColumnWidth1>94</ColumnWidth1><ColumnWidth2>1138</ColumnWidth2></Select-Ambiguous-Definitions></Static>
     <Windows>
       
       
       
-    <Wnd3>
+    <Wnd0>
         <Tabs>
           <Tab>
             <Identity>TabID-3614-29426</Identity>
@@ -67,7 +67,7 @@
           </Tab>
         <Tab><Identity>TabID-25648-21265</Identity><TabName>Ambiguous Definitions</TabName><Factory>Select-Ambiguous-Definitions</Factory><Session/></Tab></Tabs>
         
-      <SelectedTab>0</SelectedTab></Wnd3><Wnd5>
+      <SelectedTab>0</SelectedTab></Wnd0><Wnd1>
         <Tabs>
           <Tab>
             <Identity>TabID-14363-29429</Identity>
@@ -79,20 +79,20 @@
           </Tab>
         </Tabs>
         
-      <SelectedTab>0</SelectedTab></Wnd5><Wnd6><Tabs><Tab><Identity>TabID-11994-28589</Identity><TabName>Watch 1</TabName><Factory>WATCH_1</Factory></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd6><Wnd7><Tabs><Tab><Identity>TabID-19456-23711</Identity><TabName>Disassembly</TabName><Factory>Disassembly</Factory><Session/></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd7></Windows>
+      <SelectedTab>0</SelectedTab></Wnd1><Wnd2><Tabs><Tab><Identity>TabID-11994-28589</Identity><TabName>Watch 1</TabName><Factory>WATCH_1</Factory></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd2></Windows>
     <Editor>
       
       
       
       
-    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\user_app\src\bt.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>78</YPos2><SelStart2>0</SelStart2><SelEnd2>0</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Core\Src\main.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>106</YPos2><SelStart2>4646</SelStart2><SelEnd2>4646</SelEnd2></Tab><ActiveTab>1</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\user_app\src\Process.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>280</YPos2><SelStart2>7850</SelStart2><SelEnd2>7850</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Middlewares\Third_Party\FreeRTOS\Source\tasks.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>2485</YPos2><SelStart2>86379</SelStart2><SelEnd2>86379</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\user_app\src\EC20.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>0</YPos2><SelStart2>0</SelStart2><SelEnd2>0</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>456</YPos2><SelStart2>23776</SelStart2><SelEnd2>23776</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\user_app\inc\process.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>79</YPos2><SelStart2>3902</SelStart2><SelEnd2>3902</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Core\Inc\main.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>66</YPos2><SelStart2>0</SelStart2><SelEnd2>0</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\w5500\host\w5500_comm.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>262</YPos2><SelStart2>9854</SelStart2><SelEnd2>9854</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\user_app\src\system.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>115</YPos2><SelStart2>3411</SelStart2><SelEnd2>3411</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\user_app\inc\system.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>35</YPos2><SelStart2>810</SelStart2><SelEnd2>810</SelEnd2></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\user_app\src\bt.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>57</YPos2><SelStart2>1988</SelStart2><SelEnd2>1988</SelEnd2></Tab><ActiveTab>0</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\Core\Src\main.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>104</YPos2><SelStart2>4574</SelStart2><SelEnd2>4574</SelEnd2></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
     <Positions>
       
       
       
       
       
-    <Top><Row0><Sizes><Toolbar-04D1BFA0><key>iaridepm.enu1</key></Toolbar-04D1BFA0><Toolbar-1982B018><key>debuggergui.enu1</key></Toolbar-1982B018></Sizes></Row0><Row1><Sizes><Toolbar-1982A5F0><key>armjlink2.enu1</key></Toolbar-1982A5F0></Sizes></Row1></Top><Left><Row0><Sizes><Wnd5><Rect><Top>-2</Top><Left>-2</Left><Bottom>602</Bottom><Right>436</Right><x>-2</x><y>-2</y><xscreen>92</xscreen><yscreen>190</yscreen><sizeHorzCX>47917</sizeHorzCX><sizeHorzCY>198745</sizeHorzCY><sizeVertCX>228125</sizeVertCX><sizeVertCY>631799</sizeVertCY></Rect></Wnd5></Sizes></Row0></Left><Right><Row0><Sizes><Wnd6><Rect><Top>-2</Top><Left>-2</Left><Bottom>602</Bottom><Right>246</Right><x>-2</x><y>-2</y><xscreen>92</xscreen><yscreen>182</yscreen><sizeHorzCX>47917</sizeHorzCX><sizeHorzCY>190377</sizeHorzCY><sizeVertCX>129167</sizeVertCX><sizeVertCY>631799</sizeVertCY></Rect></Wnd6></Sizes></Row0><Row1><Sizes><Wnd7><Rect><Top>-2</Top><Left>244</Left><Bottom>602</Bottom><Right>492</Right><x>244</x><y>-2</y><xscreen>93</xscreen><yscreen>195</yscreen><sizeHorzCX>48438</sizeHorzCX><sizeHorzCY>203975</sizeHorzCY><sizeVertCX>129167</sizeVertCX><sizeVertCY>631799</sizeVertCY></Rect></Wnd7></Sizes></Row1></Right><Bottom><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>285</Bottom><Right>1922</Right><x>-2</x><y>-2</y><xscreen>1924</xscreen><yscreen>287</yscreen><sizeHorzCX>1002083</sizeHorzCX><sizeHorzCY>300209</sizeHorzCY><sizeVertCX>47917</sizeVertCX><sizeVertCY>198745</sizeVertCY></Rect></Wnd3></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+    <Top><Row0><Sizes><Toolbar-04A4C178><key>iaridepm.enu1</key></Toolbar-04A4C178><Toolbar-25D61578><key>debuggergui.enu1</key></Toolbar-25D61578></Sizes></Row0><Row1><Sizes><Toolbar-25D61640><key>armjlink2.enu1</key></Toolbar-25D61640></Sizes></Row1></Top><Left><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>602</Bottom><Right>320</Right><x>-2</x><y>-2</y><xscreen>92</xscreen><yscreen>190</yscreen><sizeHorzCX>47917</sizeHorzCX><sizeHorzCY>198745</sizeHorzCY><sizeVertCX>167708</sizeVertCX><sizeVertCY>631799</sizeVertCY></Rect></Wnd1></Sizes></Row0></Left><Right><Row0><Sizes><Wnd2><Rect><Top>-2</Top><Left>-2</Left><Bottom>602</Bottom><Right>666</Right><x>-2</x><y>-2</y><xscreen>92</xscreen><yscreen>182</yscreen><sizeHorzCX>47917</sizeHorzCX><sizeHorzCY>190377</sizeHorzCY><sizeVertCX>347917</sizeVertCX><sizeVertCY>631799</sizeVertCY></Rect></Wnd2></Sizes></Row0></Right><Bottom><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>285</Bottom><Right>1922</Right><x>-2</x><y>-2</y><xscreen>1924</xscreen><yscreen>287</yscreen><sizeHorzCX>1002083</sizeHorzCX><sizeHorzCY>300209</sizeHorzCY><sizeVertCX>47917</sizeVertCX><sizeVertCY>198745</sizeVertCY></Rect></Wnd0></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
   </Desktop>
 </Project>
 

@@ -55,7 +55,7 @@
 /*调试串口号，为0时关闭打印输出*/
 #define DEBUG               5
 
-#define DEBUG_BACKUP        4
+//#define DEBUG_BACKUP        4
 
 //#define UART_SP232_PORT     2
 
@@ -70,13 +70,8 @@
 	信息默认等级,须设置为常量数字宏才能展开*/
 #define LOG_LEVEL_DEF       4
 
-/*WIFI串口号*/
-#define WIFI_UART_PORT		5
-
 #define M4G_UART_PORT       2
 
-/*NB串口号*/
-#define GPRS_UART_PORT		4
 
 /*定义DFU标记BKP寄存器*/
 #define DFU_BKP             (BKP->DR10)
@@ -106,7 +101,8 @@
 #define MQTT_PORT_DEF           1883
 #define MQTT_USER_DEF           "admin"
 #define MQTT_PWD_DEF            "public"
-#define MQTT_CLIENT_ID_DEF      "M030057000000001"
+#define MQTT_CLIENT_ID_DEF      "M047057000000002"
+//M047057000000001
 //#define MQTT_CLIENT_ID_DEF      "MHC000000000005"
 
 //#define MQTT_TLS_EN         0
@@ -122,11 +118,11 @@
 // #define MQTT_PWD_DEF        "123456"
 
 
-#define UART1_RECEVIE_BUFFER_SIZE   256
-#define UART2_RECEVIE_BUFFER_SIZE   1024
-#define UART3_RECEVIE_BUFFER_SIZE   256
-#define UART4_RECEVIE_BUFFER_SIZE   2048
-#define UART5_RECEVIE_BUFFER_SIZE   2048
+#define UART1_RECEVIE_BUFFER_SIZE   0
+#define UART2_RECEVIE_BUFFER_SIZE   2048
+#define UART3_RECEVIE_BUFFER_SIZE   1024
+#define UART4_RECEVIE_BUFFER_SIZE   0
+#define UART5_RECEVIE_BUFFER_SIZE   1024
 /* Exported types ------------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/

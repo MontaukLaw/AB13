@@ -57,8 +57,8 @@ static void DeviceQueryAnalysis(uint32_t messageid, cJSON *dis);
 static uint8_t anylizeBTCmd(uint8_t *cmd, uint16_t cmdLength);
 
 uint32_t labelId;
-//BOOL publishData(char *cmd, cJSON *data);
-BOOL publishData(char *cmd, cJSON *data, uint32_t deviceIdNmb);
+BOOL publishData(char *cmd, cJSON *data);
+//BOOL publishData(char *cmd, cJSON *data, uint32_t deviceIdNmb);
 
 //static void rfidErrorUpdate(uint8_t highByte, uint8_t lowByte, uint32_t labelId);
 //static void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus,
@@ -95,7 +95,7 @@ void Process_Init(void) {
 	// 这个服务器要求QoS2
 	//Subscribe_MQTT(subscribeTopic, QOS2, ArrivePath);
 	Subscribe_MQTT(subscribeTopic, QOS0, ArrivePath);
-	// xTaskCreate(InquireTask, "InquireTask", 256, NULL, osPriorityNormal, &Inquiretask);
+	// xTaskCreate(InquireTask, "InquireTask", 512, NULL, osPriorityNormal, &Inquiretask);
 
 	if (xTaskCreate(&InquireTask, "InquireTask", 512, NULL, 3, &Inquiretask) != pdPASS)
 		DBG_LOG("Create InquireAnalysis failure");
@@ -163,7 +163,9 @@ void InquireTask(void *argument) {
 	while (!MQTT_IsConnected()) {
 		osDelay(100);
 	}
-
+    
+    publishReg();
+    
 	DBG_LOG("InquireTask Start");
 
 	while (1) {
@@ -183,10 +185,8 @@ void InquireTask(void *argument) {
 		}
 		if (testSendCounter > 35) {
 			if (MQTT_IsConnected()) {
-				publishHeartBeat();
-                
-                //stateChangedUpdate(1, 2, 1);
-                
+				publishHeartBeat();               
+                //stateChangedUpdate(1, 2, 1);                
 			}
 
 			// 下面的测试用例没问题
@@ -208,8 +208,10 @@ void clearArray(uint8_t *arr, uint16_t length) {
 		*(arr + i) = 0;
 	}
 }
+
+#if 0
 // M030057000000001
-char deviceIDStr[DEVICE_ID_LENGTH + 1] = "M030057000000001";
+char deviceIDStr[DEVICE_ID_LENGTH + 1] = "M030057000000002";
 
 void transDeviceIDToStr(uint32_t deviceIdNmb) {
 	uint8_t i = 0;
@@ -221,8 +223,10 @@ void transDeviceIDToStr(uint32_t deviceIdNmb) {
 	    }
     }
 }
+#endif
 
-BOOL publishData(char *cmd, cJSON *data, uint32_t deviceIdNmb) {
+//BOOL publishData(char *cmd, cJSON *data, uint32_t deviceIdNmb) {
+BOOL publishData(char *cmd, cJSON *data) {
 
 	BOOL ret = FALSE;
 	cJSON *root = NULL;
@@ -230,16 +234,16 @@ BOOL publishData(char *cmd, cJSON *data, uint32_t deviceIdNmb) {
 	root = cJSON_CreateObject();
 	if (root != NULL) {
 		genUUID();
-		transDeviceIDToStr(deviceIdNmb);
+		//transDeviceIDToStr(deviceIdNmb);
 		cJSON_AddStringToObject(root, "cmd", cmd);
 		cJSON_AddStringToObject(root, "msgId", uuid);
-		cJSON_AddStringToObject(root, "deviceId", deviceIDStr);
+		cJSON_AddStringToObject(root, "deviceId", WorkParam.mqtt.MQTT_ClientID);
 		cJSON_AddStringToObject(root, "protocol", "DevCommon_1.0");
 		if (timeStamp64 != 0) {
-			cJSON_AddNumberToObject(data, "time", timeStamp64);
+			cJSON_AddNumberToObject(root, "time", timeStamp64);
 
 		} else {
-			cJSON_AddNumberToObject(data, "time", 1569484973000);
+			cJSON_AddNumberToObject(root, "time", 1569484973000);
 		}
 		//cJSON_AddNumberToObject(root, "time", 1569484973000);
 
@@ -248,14 +252,20 @@ BOOL publishData(char *cmd, cJSON *data, uint32_t deviceIdNmb) {
 		}
 
 		s = cJSON_PrintUnformatted(root);
+        DBG_LOG("Min Heap Memory free size:%u", xPortGetFreeHeapSize());
+        
 		if (s != NULL) {
-			//DBG_INFO("Send q to mqtt: data:%s", s);
-			DBG_INFO("Sending q to mqtt");
+			DBG_INFO("Send q to mqtt: data:%s", s);
+			//DBG_INFO("Sending q to mqtt");
+            			
 			//ret = Publish_MQTT(publishTopic, QOS2, (uint8_t*)s, strlen(s));
 			ret = Publish_MQTT(publishTopic, QOS0, (uint8_t*) s, strlen(s));
-
-			MMEMORY_FREE(s);
-		}
+            
+            
+            MMEMORY_FREE(s);
+		}else{
+            DBG_INFO("S is null");
+        }
 		cJSON_Delete(root);
 
 	} else {
@@ -307,7 +317,7 @@ BOOL publishHeartBeat(void) {
 	return TRUE;
 }
 
-// 先试着写一个publish包, 测试通过后后面再进行重新封包
+
 BOOL publishReg(void) {
 	BOOL ret = FALSE;
 	cJSON *root = NULL;
@@ -319,16 +329,17 @@ BOOL publishReg(void) {
 		cJSON_AddStringToObject(root, "msgId", "9e847b5c7164429d907c387c7522b8f3");
 		cJSON_AddStringToObject(root, "deviceId", WorkParam.mqtt.MQTT_ClientID);
 		cJSON_AddStringToObject(root, "protocol", "DevCommon_1.0");
-		cJSON_AddNumberToObject(root, "time", 1569484973000);
+		cJSON_AddNumberToObject(root, "time", 1570788961000);
 		cJSON *data = NULL;
 		data = cJSON_CreateObject();
 		if (data != NULL) {
-			cJSON_AddStringToObject(data, "secretKey", "1001734021054373888-MDhiOTgyMDgtZDg0ZC00MDZhLThkMDgtZTY3Mzk4NWRlNGU4");
+            cJSON_AddStringToObject(data, "secretKey", "1182585337726980097-M2UzNzNjYzEt");
+			//cJSON_AddStringToObject(data, "secretKey", "1182585337726980096-NDc4ZDkzNDkt");
 		}
 		cJSON_AddItemToObjectCS(root, "data", data);
 		s = cJSON_PrintUnformatted(root);
 		if (s != NULL) {
-			DBG_INFO("CMD_Updata ts:%u,data:%s", HAL_GetTick(), s);
+			//DBG_INFO("CMD_Updata ts:%u,data:%s", HAL_GetTick(), s);
 			ret = Publish_MQTT(publishTopic, QOS0, (uint8_t*) s, strlen(s));
 			MMEMORY_FREE(s);
 		}
@@ -355,12 +366,11 @@ static void ArrivePath(uint8_t *dat, uint16_t len) {
 	char tail;
 	uint8_t i = 0;
 	uint16_t timeStampIndex;
-// DBG_LOG("New Msg");
-	cJSON *root = NULL, *responseId = NULL, *timestamp = NULL, *responseCmd =
-	NULL;
-	DBG_INFO("ArrivePath data:%s", dat);
-//tail = *(dat + len - 1);
-//DBG_INFO("last char is %c", tail);
+    //DBG_LOG("New Msg");
+	cJSON *root = NULL, *responseId = NULL, *timestamp = NULL, *responseCmd = NULL;
+	//DBG_INFO("ArrivePath data:%s", dat);
+    //tail = *(dat + len - 1);
+    //DBG_INFO("last char is %c", tail);
 	root = cJSON_Parse((const char*) dat);
 	if (root != NULL) {
 		responseCmd = cJSON_GetObjectItem(root, "responseCmd");
@@ -378,9 +388,9 @@ static void ArrivePath(uint8_t *dat, uint16_t len) {
 				timestampArr[i] = *(dat + timeStampIndex);
 				timeStampIndex++;
 			}
-			DBG_LOG("timestamp is :%s", timestampArr);
+			DBG_LOG("timestamp:%s", timestampArr);
 			getTimeStamp();
-			DBG_LOG("after trans, timestamp is %lld", timeStamp64);
+			//DBG_LOG("after trans, timestamp is %lld", timeStamp64);
 		}
 
 		cJSON_Delete(root);
@@ -748,7 +758,7 @@ void beep(void) {
 //for(i=0; i<500; i++){
 // 蜂鸣器
 	HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_SET);
-	osDelay(500);
+	osDelay(200);
 	HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_RESET);
 //osDelay(1);
 //}

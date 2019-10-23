@@ -97,7 +97,8 @@ BOOL publishReg(void);
 
 void BT_Intercept_Proc(void);
 
-BOOL publishData(char *cmd, cJSON *data,uint32_t deviceIDNumber);
+//BOOL publishData(char *cmd, cJSON *data,uint32_t deviceIDNumber);
+BOOL publishData(char *cmd, cJSON *data);
 
 void beep(void);
 

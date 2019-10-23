@@ -18,21 +18,61 @@
 #define INVENTRY_UPDATE      0x03   //     盘库上报
 #define MOVEING_INTERFACE    0x05   //    移车接口
 
+//每个基站支持的标签数量
+#define SUPPORT_LABLE_PERLBASE   60
+
+//每次发送队列的最大长度
+#define U1103_QUEUE_MAX  10
+
+//即每10秒发送10个标签的一个U1103包
+#define U1103_TIME_INTERVAL   10
+
+//每分钟6次
+#define INVENTORY_UPDATE_PER_MINUTE  6 
+
 void BT_Task(void const *argument);
 static void BTCmdHanlde();
 static void bt_Console(int argc, char *argv[]);
 int16_t BT_Console(uint8_t *data, uint16_t len);
 int16_t BT_SocketSendData(uint8_t *data, uint16_t len);
 void BT_Intercept_Proc(void);
+static void sendInventoryUpdate();
+//static void sendInventoryUpdate(uint8_t deviceStatus, uint32_t labelID);
+static void rfidErrorUpdate(uint8_t highByte, uint8_t lowByte, uint32_t labelID);
+static void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus, uint32_t labelID);
+static void sendMovingEvent(uint8_t gSensorStatus, uint32_t labelID, uint8_t deviceStatus);
 
 TaskHandle_t BTtaskHandle;
+uint16_t reportTick = 0;
+uint16_t lastReportTick = 0;
 
-static void sendInventoryUpdate(uint8_t deviceStatus, uint32_t deviceIDNumber);
-static void rfidErrorUpdate(uint8_t highByte, uint8_t lowByte, uint32_t deviceIDNumber);
-static void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus, uint32_t deviceIDNumber);
-static void sendMovingEvent(uint8_t gSensorStatus, uint32_t deviceIDNumber, uint8_t deviceStatus);
+//uint32_t labelIdArray[10];
+//uint8_t deviceStatusArray[10];
+
+uint16_t labelU1103Number;
 
 uint64_t timeStamp64;
+
+//U1103队列索引
+static uint16_t inventoryUpdateQueueIndex = 0;
+
+static uint16_t inventoryWriteQueueIndex = 0;
+
+typedef struct {
+	uint16_t labelId;
+	uint8_t deviceStatus;
+} InventoryUpdateMsg;
+
+InventoryUpdateMsg inventoryUpdateArr[SUPPORT_LABLE_PERLBASE];
+
+void fillInventoryArrForTest() {
+	uint8_t i = 0;
+	//for (i = 0; i < SUPPORT_LABLE_PERLBASE; i++) {
+	for (i = 0; i < 5; i++) {
+		inventoryUpdateArr[i].labelId = 10 + i;
+		inventoryUpdateArr[i].deviceStatus = 0x0E;
+	}
+}
 
 //uint8_t seed[] = { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'b' }
 //0x41-0x5A 0x61-0x7a 0x30-0x39
@@ -43,34 +83,24 @@ uint64_t timeStamp64;
  */
 void bt_Init() {
 	//genUUID();
+	//osThreadDef(btTask, BT_Task, osPriorityNormal, 0, 1500)
 	osThreadDef(btTask, BT_Task, osPriorityNormal, 0, 1500)
 	;
 	BTtaskHandle = osThreadCreate(osThread(btTask), NULL);
 
-//osMessageQDef(BT_SendQ, BT_SEND_Q_SIZE, void*);
-//BT_SendQId = osMessageCreate(osMessageQ(BT_SendQ), NULL);
-
-//osThreadDef(BT, BT_Task, BT_TASK_PRIO, 0, 512);
-//osThreadCreate(osThread(BT), NULL);
-//if(xTaskCreate(&InquireTask, "InquireTask", 1024, NULL, 3, &Inquiretask) != pdPASS)
-//	if (xTaskCreate(BT_Task, "BT_Task", BT_TASK_STK_SIZE, NULL, osPriorityHigh,
-//			&BTtaskHandle) != pdPASS)
-//		DBG_LOG("Create BT_Task failure");
-//	else
-//		DBG_LOG("Create BT_Task ok");
-
-//osThreadDef(M4G, M4G_Task, M4G_TASK_PRIO, 0, M4G_TASK_STK_SIZE);
-//osThreadCreate(osThread(M4G), NULL);
-
-#if BT_CMD_EN > 0
-//BT_Pipe = CMD_Pipe_Register((CMD_SendFun)BT_SocketSendData);
-//DBG_LOG("BT CMD pipe is %d.", BT_Pipe);
-#endif
-
-//CMD_ENT_DEF(bt, bt_Console);
-//Cmd_AddEntrance(CMD_ENT(bt));
-
 	DBG_LOG("BT Init.");
+
+	//fillInventoryArrForTest();
+}
+
+BOOL ifQueueHasData(uint8_t queStartIndex) {
+	uint8_t i = 0;
+	for (i = queStartIndex; i < queStartIndex + U1103_QUEUE_MAX; i++) {
+		if (inventoryUpdateArr[i].labelId > 0) {
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 void BT_Task(void const *argument) {
@@ -80,7 +110,11 @@ void BT_Task(void const *argument) {
 	TWDT_CLEAR(BTTask);
 	uint8_t testCounter = 0;
 	uint32_t btcmdtick = 0;
-//BTtaskHandle = xQueueCreate(50, sizeof(CmdTYPE_t));
+
+	inventoryUpdateQueueIndex = 0;
+
+	inventoryWriteQueueIndex = 0;
+	//BTtaskHandle = xQueueCreate(50, sizeof(CmdTYPE_t));
 
 	while (1) {
 		osDelay(1);
@@ -90,8 +124,27 @@ void BT_Task(void const *argument) {
 			//BTCmdHanlde();
 			testCounter++;
 		}
-		if (testCounter > 15) {
-			DBG_LOG("bt task running");
+		if (testCounter > U1103_TIME_INTERVAL) {
+			if (MQTT_IsConnected()) {
+				DBG_LOG("Send  %d - %d", inventoryUpdateQueueIndex * U1103_QUEUE_MAX,
+						inventoryUpdateQueueIndex * U1103_QUEUE_MAX+ U1103_QUEUE_MAX);
+
+				//如果本段有数据
+				//if (inventoryUpdateArr[inventoryUpdateQueueIndex * 10].labelId > 0) {
+				if (ifQueueHasData(inventoryUpdateQueueIndex * U1103_QUEUE_MAX)) {
+					DBG_LOG("Data In queue.");
+					sendInventoryUpdate();
+				}
+				inventoryUpdateQueueIndex++;
+				//如果发送过6次, 就从队列0开始发送
+				if (inventoryUpdateQueueIndex >= INVENTORY_UPDATE_PER_MINUTE) {
+
+					inventoryUpdateQueueIndex = 0;
+				}
+			}
+
+			//DBG_LOG("bt task running");
+			//DBG_LOG("Heap Memory free size:%u", xPortGetFreeHeapSize());
 			testCounter = 0;
 		}
 		TWDT_CLEAR(BTTask);
@@ -112,23 +165,19 @@ static void bt_Console(int argc, char *argv[]) {
 
 }
 
-uint16_t reportTick = 0;
-uint16_t lastReportTick = 0;
+static BOOL ifLabelIdInQue(uint8_t labelID) {
+	uint8_t i = 0;
 
-// 检查是否可以发送
-uint8_t ifSendingGreenLight() {
-	uint16_t timePassed = 0;
-	if (MQTT_IsConnected()) {
-		if (HAL_GetTick() > lastReportTick) {
-			timePassed = HAL_GetTick() - lastReportTick;
-			if (timePassed > 5000) {
-				DBG_LOG("Green Light");
-				lastReportTick = HAL_GetTick();
-				return 1;
-			}
+	//必须全数组搜索
+	for (i = 0; i < SUPPORT_LABLE_PERLBASE; i++) {
+		if (inventoryUpdateArr[i].labelId == labelID) {
+			DBG_LOG("%d already in queue", labelID);
+			return TRUE;
+
 		}
 	}
-	return 0;
+	DBG_LOG("Adding %d to Queue", labelID);
+	return FALSE;
 }
 
 // 协议分析
@@ -143,7 +192,7 @@ uint8_t msg[MSG_LENGTH] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 static uint8_t anylizeBTCmd(uint8_t *cmd, uint16_t cmdLength) {
 	uint8_t oldState, newState, gSensorStatus;
 	uint8_t rfErrorHigh, rfErrorLow;
-	uint32_t deviceIDNumber = 0;
+	uint32_t labelID = 0;
 	if (cmdLength >= MSG_LENGTH) {
 		DBG_LOG("rssi is %d", *(cmd + 15));
 		// 校验一下吧, 以防万一, 没毛病
@@ -153,11 +202,11 @@ static uint8_t anylizeBTCmd(uint8_t *cmd, uint16_t cmdLength) {
 			newState = *(cmd + 8);
 			//这里应该是设备id
 			//deviceIDNumber = ((uint32_t)(*(cmd + 2))) << 24 || ((uint32_t)(*(cmd + 3))) << 16 || ((uint32_t)(*(cmd + 4))) << 8
-					//|| ((uint32_t)(*(cmd + 5)));
-            
-            //这里后面需要改
-            deviceIDNumber = *(cmd + 5);
-            
+			//|| ((uint32_t)(*(cmd + 5)));
+
+			//这里后面需要改
+			labelID = *(cmd + 5);
+
 			// 检查数据上报类型
 			switch (*(cmd + 12)) {
 			// 状态异常
@@ -165,7 +214,7 @@ static uint8_t anylizeBTCmd(uint8_t *cmd, uint16_t cmdLength) {
 				// 切换状态时beep
 				beep();
 				//if (ifSendingGreenLight()) {
-				stateChangedUpdate(newState, oldState, deviceIDNumber);
+				stateChangedUpdate(newState, oldState, labelID);
 				//}
 
 				break;
@@ -175,22 +224,33 @@ static uint8_t anylizeBTCmd(uint8_t *cmd, uint16_t cmdLength) {
 				//if (ifSendingGreenLight()) {
 				rfErrorHigh = *(cmd + 9);
 				rfErrorLow = *(cmd + 10);
-				rfidErrorUpdate(rfErrorHigh, rfErrorLow, deviceIDNumber);
+				rfidErrorUpdate(rfErrorHigh, rfErrorLow, labelID);
 				//}
 
 				break;
 
 			case INVENTRY_UPDATE:
-				//if (ifSendingGreenLight()) {
-				sendInventoryUpdate(newState, deviceIDNumber);
-				//}
+
+				//首先判断队列中是否已经有记录了
+				if (!ifLabelIdInQue(labelID)) {
+					inventoryUpdateArr[inventoryWriteQueueIndex].labelId = labelID;
+					inventoryUpdateArr[inventoryWriteQueueIndex].deviceStatus = newState;
+					DBG_LOG("inventoryWriteQueueIndex:%d", inventoryWriteQueueIndex);
+
+					//写入之后index++
+					inventoryWriteQueueIndex++;
+					if (inventoryWriteQueueIndex >= SUPPORT_LABLE_PERLBASE) {
+						inventoryWriteQueueIndex = 0;
+					}
+				}
+
 				break;
 
 			case MOVEING_INTERFACE:
 				beep();
 				//if (ifSendingGreenLight()) {
 				gSensorStatus = *(cmd + 11);
-				sendMovingEvent(gSensorStatus, deviceIDNumber, newState);
+				sendMovingEvent(gSensorStatus, labelID, newState);
 				//}
 				break;
 
@@ -234,84 +294,160 @@ void BT_Intercept_Proc(void) {
 	}
 }
 
-const char* getLabelId(uint32_t deviceIDNumber){
-    switch (deviceIDNumber){
-       
-    case 0x02:
-        return "1169159667513733120-MmZiZTI5Mzkt";
-        break;
-    case 0x03:
-        return "1169159667513733121-ODUxNmUyYzMt";
-        break;
-    case 0x04:
-        return "1169159667513733122-ZjhlMjc4ZmEt";
-        break;
-    default:
-        break;
-    
-    }
-    return "1169159667509538816-MThjNTIxMTQt";
+//17
+char labelIDStandard[17] = "M030057000000002";
+
+void transLabelId(uint8_t deviceIDNumber) {
+
+	uint8_t time1, time10, time100;
+
+//先恢复一个初始状态
+	labelIDStandard[15] = '0';
+	labelIDStandard[14] = '0';
+	labelIDStandard[13] = '0';
+//1位数
+	if (deviceIDNumber < 10) {
+		labelIDStandard[15] = (char) (deviceIDNumber + 0x30);
+		//*(labelIDStandard + 16) = deviceIDNumber;
+		//2位数
+	} else if (deviceIDNumber > 9 && deviceIDNumber < 100) {
+		time10 = deviceIDNumber / 10;
+		time1 = deviceIDNumber - (time10 * 10);
+		labelIDStandard[15] = (char) (time1 + 0x30);
+		labelIDStandard[14] = (char) (time10 + 0x30);
+		//*(labelIDStandard + 16) = time1;
+		//*(labelIDStandard + 15) = time10;
+
+	} else if (deviceIDNumber > 99) {
+		time100 = deviceIDNumber / 100;
+		time10 = (deviceIDNumber - time100 * 100) / 10;
+		time1 = deviceIDNumber - (time10 * 10) - time100 * 100;
+
+		labelIDStandard[15] = (char) (time1 + 0x30);
+		labelIDStandard[14] = (char) (time10 + 0x30);
+		labelIDStandard[13] = (char) (time100 + 0x30);
+		//*(labelIDStandard + 16) = time1;
+		//*(labelIDStandard + 15) = time10;
+		//*(labelIDStandard + 14) = time100;
+	}
 
 }
 
-uint16_t transStatusToNumber(uint8_t status){
-    return  (1000*((status >> 3) & 1) + 100*((status >> 2) & 1) + 10 * ((status >> 1) & 1) + (status & 1));	
+uint16_t transStatusToNumber(uint8_t status) {
+	return (1000 * ((status >> 3) & 1) + 100 * ((status >> 2) & 1) + 10 * ((status >> 1) & 1) + (status & 1));
 }
 
-static void sendInventoryUpdate(uint8_t deviceStatus, uint32_t deviceIDNumber) {
+//static void sendInventoryUpdate(uint8_t deviceStatus, uint32_t labelID)
+static void sendInventoryUpdate() {
 	cJSON *data = NULL;
 	data = NULL;
+
 	data = cJSON_CreateObject();
+	uint8_t i;
+	uint8_t index;
 	if (data != NULL) {
 
-		cJSON_AddNumberToObject(data, "deviceStatus", deviceStatus);
+		cJSON *infos = NULL;
+		infos = NULL;
 
-		cJSON_AddStringToObject(data, "labelId", getLabelId(deviceIDNumber));
+		infos = cJSON_CreateArray();
+		if (infos != NULL) {
+			//if (labelU1103Number > 0) {
+			index = inventoryUpdateQueueIndex * U1103_QUEUE_MAX;
 
-		if (timeStamp64 != 0) {
-			cJSON_AddNumberToObject(data, "dateTime", timeStamp64);
+			for (i = index; i < index + U1103_QUEUE_MAX; i++) {
+				if (inventoryUpdateArr[i].labelId > 0) {
+					cJSON *info = NULL;
+					info = NULL;
+					info = cJSON_CreateObject();
 
-		} else {
-			cJSON_AddNumberToObject(data, "dateTime", 1569484973000);
+					if (info != NULL) {
+
+						transLabelId(inventoryUpdateArr[i].labelId);
+
+						//清除记录
+						inventoryUpdateArr[i].labelId = 0;
+
+						cJSON_AddNumberToObject(info, "deviceStatus", transStatusToNumber(inventoryUpdateArr[i].deviceStatus));
+
+						//cJSON_AddStringToObject(info, "labelId", "M030057000000002");
+						//cJSON_AddStringToObject(info, "labelId", getLabelId(inventoryUpdateArr[i].labelId));
+						cJSON_AddStringToObject(info, "labelId", labelIDStandard);
+
+						if (timeStamp64 != 0) {
+							cJSON_AddNumberToObject(info, "dateTime", timeStamp64);
+						} else {
+							cJSON_AddNumberToObject(info, "dateTime", 1569484973000);
+						}
+
+						//有记录才放进去json数组, 没有记录不放
+						cJSON_AddItemToArray(infos, info);
+					}
+
+				}
+
+			}
+
 		}
+		cJSON_AddItemToObjectCS(data, "infos", infos);
 
-		//cJSON_AddNumberToObject(data, "dateTime", 1569484973000);
 	}
-	publishData("U1103", data, deviceIDNumber);
+	publishData("U1103", data);
 
 //cJSON_Delete(data);
+}
+
+uint16_t getErrorCodeNumber(uint8_t highByte, uint8_t lowByte) {
+
+//异常移动
+	if (highByte == 0x10 && lowByte == 0x02) {
+		return 1002;
+
+		//电量不足
+	} else if (highByte == 0x10 && lowByte == 0x01) {
+		return 1001;
+
+		//标签自身故障
+	} else if (highByte == 0x10 && lowByte == 0x03) {
+		return 1003;
+	}
+
+//自身故障
+	return 2006;
+
 }
 
 //uint16_t erroCodeNumber =0;
-static void rfidErrorUpdate(uint8_t highByte, uint8_t lowByte, uint32_t deviceIDNumber) {
+static void rfidErrorUpdate(uint8_t highByte, uint8_t lowByte, uint32_t labelID) {
 	cJSON *data = NULL;
 	data = NULL;
 	data = cJSON_CreateObject();
-	uint16_t errorCode = (uint16_t) highByte << 8 || lowByte;
-    //erroCodeNumber=
-        
-    if (data != NULL) {
+//uint16_t errorCode = (uint16_t) highByte << 8 || lowByte;
+//erroCodeNumber=
 
-		//cJSON_AddStringToObject(data, "labelId", "1169159667509538816-MThjNTIxMTQt");
-		cJSON_AddNumberToObject(data, "errorCode", errorCode);
+	if (data != NULL) {
+		transLabelId(labelID);
+		cJSON_AddStringToObject(data, "labelId", labelIDStandard);
+		cJSON_AddNumberToObject(data, "errorCode", getErrorCodeNumber(highByte, lowByte));
 	}
 // 标签错误cmd是u1102
-	publishData("U1102", data, deviceIDNumber);
+	publishData("U1102", data);
 
 //cJSON_Delete(data);
 }
 
-static void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus, uint32_t deviceIDNumber) {
+static void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus, uint32_t labelID) {
 	cJSON *data = NULL;
 	data = NULL;
 	data = cJSON_CreateObject();
 	if (data != NULL) {
+		transLabelId(labelID);
 
 		cJSON_AddNumberToObject(data, "targetStatus", transStatusToNumber(targetStatus));
 
 		cJSON_AddNumberToObject(data, "initialStatus", transStatusToNumber(initialStatus));
 
-		cJSON_AddStringToObject(data, "labelId", getLabelId(deviceIDNumber));
+		cJSON_AddStringToObject(data, "labelId", labelIDStandard);
 
 		if (timeStamp64 != 0) {
 			cJSON_AddNumberToObject(data, "dateTime", timeStamp64);
@@ -320,31 +456,113 @@ static void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus, uint
 			cJSON_AddNumberToObject(data, "dateTime", 1569484973000);
 		}
 	}
-	publishData("U1101", data, deviceIDNumber);
+	publishData("U1101", data);
 
 //cJSON_Delete(data);
 }
 
-static void sendMovingEvent(uint8_t gSensorStatus, uint32_t deviceIDNumber, uint8_t deviceStatus) {
+static void sendMovingEvent(uint8_t gSensorStatus, uint32_t labelID, uint8_t deviceStatus) {
 	cJSON *data = NULL;
 	data = NULL;
 	data = cJSON_CreateObject();
 	if (data != NULL) {
-		cJSON_AddNumberToObject(data, "deviceStatus", deviceStatus);
 
-		cJSON_AddNumberToObject(data, "gyroscopeStatus", gSensorStatus);
+		cJSON *infos = NULL;
+		infos = NULL;
 
-		cJSON_AddStringToObject(data, "labelId", getLabelId(deviceStatus));
+		infos = cJSON_CreateArray();
+		if (infos != NULL) {
 
-		if (timeStamp64 != 0) {
-			cJSON_AddNumberToObject(data, "dateTime", timeStamp64);
+			cJSON *info = NULL;
+			info = NULL;
+			info = cJSON_CreateObject();
 
-		} else {
-			cJSON_AddNumberToObject(data, "dateTime", 1569484973000);
+			if (info != NULL) {
+
+				transLabelId(labelID);
+
+				cJSON_AddNumberToObject(info, "deviceStatus", transStatusToNumber(deviceStatus));
+
+				cJSON_AddNumberToObject(info, "gyroscopeStatus", gSensorStatus);
+
+				cJSON_AddStringToObject(info, "labelId", labelIDStandard);
+
+				if (timeStamp64 != 0) {
+					cJSON_AddNumberToObject(info, "dateTime", timeStamp64);
+
+				} else {
+					cJSON_AddNumberToObject(info, "dateTime", 1569484973000);
+				}
+				//cJSON_AddNumberToObject(info, "deviceStatus", transStatusToNumber(deviceStatus));
+				//cJSON_AddStringToObject(info, "labelId", getLabelId(labelID));
+				//if (timeStamp64 != 0) {
+				//	cJSON_AddNumberToObject(info, "dateTime", timeStamp64);
+				//} else {
+				//cJSON_AddNumberToObject(info, "dateTime", 1569484973000);
+				//}
+			}
+			cJSON_AddItemToArray(infos, info);
 		}
+		cJSON_AddItemToObjectCS(data, "infos", infos);
 
 		//cJSON_AddNumberToObject(data, "dateTime", 1569484973000);
 	}
-	publishData("U1105", data, deviceIDNumber);
+	publishData("U1105", data);
 
 }
+
+#if 0
+//检查是否含有了
+uint8_t ifLabelRecorded(uint32_t labelId) {
+	uint8_t i = 0;
+	for (i = 0; i < 10; i++) {
+		if (labelIdArray[i] == labelId) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+
+void clearLableArray() {
+	uint8_t i = 0;
+	for (i = 0; i < 10; i++) {
+		labelIdArray[i] = 0;
+	}
+}
+
+
+// 检查是否可以发送
+uint8_t ifSendingGreenLight(uint8_t deviceStatus, uint32_t labelID) {
+	uint16_t timePassed = 0;
+	if (MQTT_IsConnected()) {
+		if (HAL_GetTick() > lastReportTick) {
+			timePassed = HAL_GetTick() - lastReportTick;
+			if (timePassed > 60000) {
+				DBG_LOG("Green Light");
+				lastReportTick = HAL_GetTick();
+
+				return 1;
+				//如果时间不够, 就检查是否之前已经有记录
+			} else {
+				//如果记录存在, 直接return
+				if (ifLabelRecorded(labelID)) {
+					DBG_LOG("Already Got this 1103, total record: %d", labelU1103Number);
+					return 0;
+				} else {
+					//此处应该用结构体
+					labelIdArray[labelU1103Number] = labelID;
+					deviceStatusArray[labelU1103Number] = deviceStatus;
+					labelU1103Number++;
+					DBG_LOG("Add this labelID");
+					return 0;
+				}
+
+			}
+		}
+	}
+	return 0;
+}
+#endif
+

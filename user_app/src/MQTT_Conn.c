@@ -119,9 +119,7 @@ BOOL MQTT_IsDataFlow(void) {
 void messageArrived(MessageData* data) {
     int i = 0;
 #if MQTT_DEBUG > 0
-    DBG_LOG("Receive New message%.*s, payload: ",
-            data->topicName->lenstring.len,
-            data->topicName->lenstring.data);
+    DBG_LOG("Receive New message%.*s, payload: ", data->topicName->lenstring.len, data->topicName->lenstring.data);
 #if MQTT_DEBUG > 1
     CMD_HEX_Print(data->message->payload, data->message->payloadlen);
 #endif
@@ -374,7 +372,7 @@ static void MQTT_SendPoll(void) {
                 while(retryTime){
                     retryTime -- ;
                     if ((rc = MQTTPublish(&mClient, top, pmsg)) == SUCESS){
-                        DBG_LOG("Msg ready for send is : %s", pmsg->payload);
+                        //DBG_LOG("Msg ready for send is : %s", pmsg->payload);
                         DBG_LOG("Sent");
                         retryTime = 0;
                         Publish_Fail = 0;
