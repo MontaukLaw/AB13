@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"D:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\common\bin\cspybat" -f "D:\车厂标签\Firmware\firmware\AB13BaseAD20New\EWARM\settings\AD-20.AD-20.general.xcl" --backend -f "D:\车厂标签\Firmware\firmware\AB13BaseAD20New\EWARM\settings\AD-20.AD-20.driver.xcl" 
+"D:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\common\bin\cspybat" -f "D:\AFU硬件\车厂标签\Firmware\firmware\AB13BaseAD20New\EWARM\settings\AD-20.AD-20.general.xcl" --backend -f "D:\AFU硬件\车厂标签\Firmware\firmware\AB13BaseAD20New\EWARM\settings\AD-20.AD-20.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"D:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\common\bin\cspybat" -f "D:\车厂标签\Firmware\firmware\AB13BaseAD20New\EWARM\settings\AD-20.AD-20.general.xcl" "--debug_file=%~1" --backend -f "D:\车厂标签\Firmware\firmware\AB13BaseAD20New\EWARM\settings\AD-20.AD-20.driver.xcl" 
+"D:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\common\bin\cspybat" -f "D:\AFU硬件\车厂标签\Firmware\firmware\AB13BaseAD20New\EWARM\settings\AD-20.AD-20.general.xcl" "--debug_file=%~1" --backend -f "D:\AFU硬件\车厂标签\Firmware\firmware\AB13BaseAD20New\EWARM\settings\AD-20.AD-20.driver.xcl" 
 
 @echo off 
 :end

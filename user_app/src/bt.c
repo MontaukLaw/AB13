@@ -126,8 +126,7 @@ void BT_Task(void const *argument) {
 		}
 		if (testCounter > U1103_TIME_INTERVAL) {
 			if (MQTT_IsConnected()) {
-				DBG_LOG("Send  %d - %d", inventoryUpdateQueueIndex * U1103_QUEUE_MAX,
-						inventoryUpdateQueueIndex * U1103_QUEUE_MAX+ U1103_QUEUE_MAX);
+				DBG_LOG("Send  %d - %d", inventoryUpdateQueueIndex * U1103_QUEUE_MAX, inventoryUpdateQueueIndex * U1103_QUEUE_MAX+ U1103_QUEUE_MAX);
 
 				//如果本段有数据
 				//if (inventoryUpdateArr[inventoryUpdateQueueIndex * 10].labelId > 0) {
@@ -148,7 +147,9 @@ void BT_Task(void const *argument) {
 			testCounter = 0;
 		}
 		TWDT_CLEAR(BTTask);
-		BT_Intercept_Proc();
+		if (MQTT_IsConnected()) {
+			BT_Intercept_Proc();
+		}
 	}
 
 }
@@ -193,75 +194,84 @@ static uint8_t anylizeBTCmd(uint8_t *cmd, uint16_t cmdLength) {
 	uint8_t oldState, newState, gSensorStatus;
 	uint8_t rfErrorHigh, rfErrorLow;
 	uint32_t labelID = 0;
+	uint8_t packageNumber = 0;
+	uint8_t i = 0;
+	uint8_t *cmdStart;
 	if (cmdLength >= MSG_LENGTH) {
-		DBG_LOG("rssi is %d", *(cmd + 15));
-		// 校验一下吧, 以防万一, 没毛病
-		if (*cmd == BT_MSG_HEAD && (*(cmd + MSG_LENGTH - 1) == BT_MSG_TAIL) && (*(cmd + 1) == AFUIOT)) {
+		//DBG_LOG("rssi is %d", *(cmd + 15));
 
-			oldState = *(cmd + 7);
-			newState = *(cmd + 8);
-			//这里应该是设备id
-			//deviceIDNumber = ((uint32_t)(*(cmd + 2))) << 24 || ((uint32_t)(*(cmd + 3))) << 16 || ((uint32_t)(*(cmd + 4))) << 8
-			//|| ((uint32_t)(*(cmd + 5)));
+		packageNumber = cmdLength / MSG_LENGTH;
 
-			//这里后面需要改
-			labelID = *(cmd + 5);
+		if (packageNumber > 0) {
+			DBG_LOG("Got %d packages", packageNumber);
+			for (i = 0; i < packageNumber; i++) {
+				DBG_LOG("Package%d", i);
+				cmdStart = cmd + i * MSG_LENGTH;
+				if (*cmdStart == BT_MSG_HEAD && (*(cmdStart + MSG_LENGTH - 1) == BT_MSG_TAIL) && (*(cmdStart + 1) == AFUIOT)) {
+					oldState = *(cmdStart + 7);
+					newState = *(cmdStart + 8);
+					//这里应该是设备id
+					//deviceIDNumber = ((uint32_t)(*(cmd + 2))) << 24 || ((uint32_t)(*(cmd + 3))) << 16 || ((uint32_t)(*(cmd + 4))) << 8
+					//|| ((uint32_t)(*(cmd + 5)));
 
-			// 检查数据上报类型
-			switch (*(cmd + 12)) {
-			// 状态异常
-			case STATUS_UPDATE:
-				// 切换状态时beep
-				beep();
-				//if (ifSendingGreenLight()) {
-				stateChangedUpdate(newState, oldState, labelID);
-				//}
+					//这里后面需要改
+					labelID = *(cmdStart + 5);
 
-				break;
-				// 标签预警
-			case RFID_ERROR_WARNING:
-				beep();
-				//if (ifSendingGreenLight()) {
-				rfErrorHigh = *(cmd + 9);
-				rfErrorLow = *(cmd + 10);
-				rfidErrorUpdate(rfErrorHigh, rfErrorLow, labelID);
-				//}
+					// 检查数据上报类型
+					switch (*(cmdStart + 12)) {
+					// 状态异常
+					case STATUS_UPDATE:
+						// 切换状态时beep
+						beep();
+						//if (ifSendingGreenLight()) {
+						stateChangedUpdate(newState, oldState, labelID);
+						//}
 
-				break;
+						break;
+						// 标签预警
+					case RFID_ERROR_WARNING:
+						beep();
+						//if (ifSendingGreenLight()) {
+						rfErrorHigh = *(cmdStart + 9);
+						rfErrorLow = *(cmdStart + 10);
+						rfidErrorUpdate(rfErrorHigh, rfErrorLow, labelID);
+						//}
 
-			case INVENTRY_UPDATE:
+						break;
 
-				//首先判断队列中是否已经有记录了
-				if (!ifLabelIdInQue(labelID)) {
-					inventoryUpdateArr[inventoryWriteQueueIndex].labelId = labelID;
-					inventoryUpdateArr[inventoryWriteQueueIndex].deviceStatus = newState;
-					DBG_LOG("inventoryWriteQueueIndex:%d", inventoryWriteQueueIndex);
+					case INVENTRY_UPDATE:
 
-					//写入之后index++
-					inventoryWriteQueueIndex++;
-					if (inventoryWriteQueueIndex >= SUPPORT_LABLE_PERLBASE) {
-						inventoryWriteQueueIndex = 0;
+						//首先判断队列中是否已经有记录了
+						if (!ifLabelIdInQue(labelID)) {
+							inventoryUpdateArr[inventoryWriteQueueIndex].labelId = labelID;
+							inventoryUpdateArr[inventoryWriteQueueIndex].deviceStatus = newState;
+							DBG_LOG("inventoryWriteQueueIndex:%d", inventoryWriteQueueIndex);
+
+							//写入之后index++
+							inventoryWriteQueueIndex++;
+							if (inventoryWriteQueueIndex >= SUPPORT_LABLE_PERLBASE) {
+								inventoryWriteQueueIndex = 0;
+							}
+						}
+
+						break;
+
+					case MOVEING_INTERFACE:
+						beep();
+						//if (ifSendingGreenLight()) {
+						gSensorStatus = *(cmdStart + 11);
+						sendMovingEvent(gSensorStatus, labelID, newState);
+						//}
+						break;
+
+					default:
+						break;
 					}
 				}
-
-				break;
-
-			case MOVEING_INTERFACE:
-				beep();
-				//if (ifSendingGreenLight()) {
-				gSensorStatus = *(cmd + 11);
-				sendMovingEvent(gSensorStatus, labelID, newState);
-				//}
-				break;
-
-			default:
-				break;
 			}
 
-			//case
-			//DBG_LOG("My package");
-
 		}
+
 	}
 
 	return 0;
@@ -280,9 +290,13 @@ void BT_Intercept_Proc(void) {
 	}
 	if ((UART_QueryByte(BT_TEST_PORT, len - 1) == BT_MSG_TAIL && UART_QueryByte(BT_TEST_PORT, len - (MSG_LENGTH - 1)) == BT_MSG_HEAD
 			&& UART_GetDataIdleTicks(BT_TEST_PORT) >= 20) || UART_GetDataIdleTicks(BT_TEST_PORT) >= BT_UART_REFRESH_TICK) {
+		DBG_LOG("BT msg length:%d", len);
+
 		if (len >= (BT_RECEIVE_MAX_SIZE - 1)) {
-			len = M4G_RECEIVE_MAX_SIZE - 1;
+
+			len = BT_RECEIVE_MAX_SIZE - 1;
 		}
+
 		pbuf = MMEMORY_ALLOC(len + 1);
 		if (pbuf != NULL) {
 			len = UART_ReadData(BT_TEST_PORT, pbuf, len);
@@ -294,18 +308,21 @@ void BT_Intercept_Proc(void) {
 	}
 }
 
-//17
-char labelIDStandard[17] = "M030057000000002";
+//下面测试用
+//char labelIDStandard[17] = "M030057000000002";
+//生产用下面的
+char labelIDStandard[17] = "M030055000000002";
 
 void transLabelId(uint8_t deviceIDNumber) {
 
 	uint8_t time1, time10, time100;
 
-//先恢复一个初始状态
+    //先恢复一个初始状态
 	labelIDStandard[15] = '0';
 	labelIDStandard[14] = '0';
 	labelIDStandard[13] = '0';
-//1位数
+
+    //1位数
 	if (deviceIDNumber < 10) {
 		labelIDStandard[15] = (char) (deviceIDNumber + 0x30);
 		//*(labelIDStandard + 16) = deviceIDNumber;
@@ -340,7 +357,7 @@ uint16_t transStatusToNumber(uint8_t status) {
 //static void sendInventoryUpdate(uint8_t deviceStatus, uint32_t labelID)
 static void sendInventoryUpdate() {
 	cJSON *data = NULL;
-	data = NULL;
+//	data = NULL;
 
 	data = cJSON_CreateObject();
 	uint8_t i;
@@ -476,7 +493,7 @@ static void sendMovingEvent(uint8_t gSensorStatus, uint32_t labelID, uint8_t dev
 			cJSON *info = NULL;
 			info = NULL;
 			info = cJSON_CreateObject();
-
+            	
 			if (info != NULL) {
 
 				transLabelId(labelID);
@@ -512,6 +529,72 @@ static void sendMovingEvent(uint8_t gSensorStatus, uint32_t labelID, uint8_t dev
 }
 
 #if 0
+if (*cmd == BT_MSG_HEAD && (*(cmd + MSG_LENGTH - 1) == BT_MSG_TAIL) && (*(cmd + 1) == AFUIOT)) {
+
+	oldState = *(cmd + 7);
+	newState = *(cmd + 8);
+	//这里应该是设备id
+	//deviceIDNumber = ((uint32_t)(*(cmd + 2))) << 24 || ((uint32_t)(*(cmd + 3))) << 16 || ((uint32_t)(*(cmd + 4))) << 8
+	//|| ((uint32_t)(*(cmd + 5)));
+
+	//这里后面需要改
+	labelID = *(cmd + 5);
+
+	// 检查数据上报类型
+	switch (*(cmd + 12)) {
+	// 状态异常
+	case STATUS_UPDATE:
+		// 切换状态时beep
+		beep();
+		//if (ifSendingGreenLight()) {
+		stateChangedUpdate(newState, oldState, labelID);
+		//}
+
+		break;
+		// 标签预警
+	case RFID_ERROR_WARNING:
+		beep();
+		//if (ifSendingGreenLight()) {
+		rfErrorHigh = *(cmd + 9);
+		rfErrorLow = *(cmd + 10);
+		rfidErrorUpdate(rfErrorHigh, rfErrorLow, labelID);
+		//}
+
+		break;
+
+	case INVENTRY_UPDATE:
+
+		//首先判断队列中是否已经有记录了
+		if (!ifLabelIdInQue(labelID)) {
+			inventoryUpdateArr[inventoryWriteQueueIndex].labelId = labelID;
+			inventoryUpdateArr[inventoryWriteQueueIndex].deviceStatus = newState;
+			DBG_LOG("inventoryWriteQueueIndex:%d", inventoryWriteQueueIndex);
+
+			//写入之后index++
+			inventoryWriteQueueIndex++;
+			if (inventoryWriteQueueIndex >= SUPPORT_LABLE_PERLBASE) {
+				inventoryWriteQueueIndex = 0;
+			}
+		}
+
+		break;
+
+	case MOVEING_INTERFACE:
+		beep();
+		//if (ifSendingGreenLight()) {
+		gSensorStatus = *(cmd + 11);
+		sendMovingEvent(gSensorStatus, labelID, newState);
+		//}
+		break;
+
+	default:
+		break;
+	}
+
+	//case
+	//DBG_LOG("My package");
+
+
 //检查是否含有了
 uint8_t ifLabelRecorded(uint32_t labelId) {
 	uint8_t i = 0;

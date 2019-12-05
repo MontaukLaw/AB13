@@ -2,7 +2,7 @@
 
 "D:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\arm\bin\armjlink2.dll" 
 
-"D:\车厂标签\Firmware\firmware\AB13BaseAD20New\EWARM\AD-20\Exe\AD-20.out" 
+"D:\AFU硬件\车厂标签\Firmware\firmware\AB13BaseAD20New\EWARM\AD-20\Exe\AD-20.out" 
 
 --plugin "D:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\arm\bin\armbat.dll" 
 

@@ -209,22 +209,6 @@ void clearArray(uint8_t *arr, uint16_t length) {
 	}
 }
 
-#if 0
-// M030057000000001
-char deviceIDStr[DEVICE_ID_LENGTH + 1] = "M030057000000002";
-
-void transDeviceIDToStr(uint32_t deviceIdNmb) {
-	uint8_t i = 0;
-	uint8_t counter = 8;
-    if(deviceIdNmb>0){
-	    for (i = 8; i < DEVICE_ID_LENGTH; i++) {
-		    deviceIDStr[i] = (deviceIdNmb / pow(10, (counter - 1))) + 0x30;
-		    counter--;
-	    }
-    }
-}
-#endif
-
 //BOOL publishData(char *cmd, cJSON *data, uint32_t deviceIdNmb) {
 BOOL publishData(char *cmd, cJSON *data) {
 
@@ -333,7 +317,7 @@ BOOL publishReg(void) {
 		cJSON *data = NULL;
 		data = cJSON_CreateObject();
 		if (data != NULL) {
-            cJSON_AddStringToObject(data, "secretKey", "1182585337726980097-M2UzNzNjYzEt");
+            cJSON_AddStringToObject(data, "secretKey", DEVICE_KEY);
 			//cJSON_AddStringToObject(data, "secretKey", "1182585337726980096-NDc4ZDkzNDkt");
 		}
 		cJSON_AddItemToObjectCS(root, "data", data);
@@ -424,147 +408,10 @@ static void ArrivePath_old(uint8_t *dat, uint16_t len) {
 	cJSON *root = NULL, *msgid = NULL, *timestamp = NULL;
 	root = cJSON_Parse((const char*) dat);
 	DBG_LOG("New Msg");
-//DBG_INFO("ArrivePath ts:%u, data:%s", HAL_GetTick(), dat);
-#if 0    
-    if (root != NULL) 
-    {
-        msgid = cJSON_GetObjectItem(root, "msgId");
-        DBG_LOG("msgid:%s", msgid->valuestring); 
-        timestamp = cJSON_GetObjectItem(root, "time");
-        DBG_LOG("timestamp:%s", timestamp->string); 
-        if(timestamp != NULL && timestamp->type == cJSON_Number){
-            unixTimeLong = (long)timestamp->valuedouble;
-            DBG_LOG("timestamp:%f", unixTimeLong); 
-        }      
-
-        cJSON_Delete(root);          
     
-    }  
-#endif     
 }
 
-#if 0
-/**
- * 接收处理
- *
- * @param dat    接收到的数据指针
- * @param len    数据长度
- */
-static void ArrivePath(uint8_t* dat, uint16_t len) {
-    uint8_t save = 0;
-    uint32_t tsdiff = 0, ts = 0;
-//    char temp[48] = { 0, 0 };
-//    proret_t ret = ret_ok;
-    cJSON* root = NULL, *msgid = NULL, *timestamp = NULL, *cmd = NULL, *desired = NULL, *deviceid = NULL, *child = NULL;;
-    *(dat + len) = 0;
-    DBG_INFO("ArrivePath ts:%u,data:%s", HAL_GetTick(), dat);
-    root = cJSON_Parse((const char*)dat);
-    if (root != NULL) {
-        msgid = cJSON_GetObjectItem(root, "messageid");
-        deviceid = cJSON_GetObjectItem(root, "deviceid");
-        DBG_LOG("msgid:%d", cmd->valueint);
-        DBG_LOG("deviceid:%s", cmd->valuestring);
-        if (msgid != NULL && msgid->type == cJSON_Number
-                && deviceid != NULL &&
-                (strcmp(deviceid->valuestring, WorkParam.mqtt.MQTT_ClientID) == 0
-                 || deviceid->valuestring[0] == '0')) {
-            timestamp = cJSON_GetObjectItem(root, "timestamp");
-            desired = cJSON_GetObjectItem(root, "desired");
-            cmd = cJSON_GetObjectItem(root, "cmd");
-            DBG_LOG("cmm:%s", cmd->valuestring);
-            /*RTC校时*/
-            if (timestamp != NULL && timestamp->type == cJSON_Number) {
-                ts = timestamp->valueint;
-                tsdiff = RTC_ReadTick();
-                tsdiff = abs(ts - tsdiff);
-            }
-            if (STR_EQUAL(cmd->valuestring, "CMD-01")) {
-                child = cJSON_GetObjectItem(desired, "devicereset");
-                if (child != NULL && child->type == cJSON_True) {
-                    NVIC_SystemReset();
-                }
-                child = cJSON_GetObjectItem(desired, "devicefactoryreset");
-                if (child != NULL && child->type == cJSON_True) {
-                    WorkParam.mqtt.MQTT_Port = MQTT_PORT_DEF;
-                    WorkParam.mqtt.MQTT_PingInvt = MQTT_PING_INVT_DEF;
-                    strcpy(WorkParam.mqtt.MQTT_Server, MQTT_SERVER_DEF);
-                    strcpy(WorkParam.mqtt.MQTT_UserName, MQTT_USER_DEF);
-                    strcpy(WorkParam.mqtt.MQTT_UserPWD, MQTT_PWD_DEF);
-                    WorkParam_Save();
-                }
-                child = cJSON_GetObjectItem(desired, "deviceparamget");
-                if (child != NULL && child->type == cJSON_True) {
-                    Status_Updata();
-                }
-                child = cJSON_GetObjectItem(desired, "scanstation");
-                if (child != NULL && child->type == cJSON_True) {
-                    MCPU_ENTER_CRITICAL();
-                    // ScanStationStart = TRUE;
-                    MCPU_EXIT_CRITICAL();
-                }
-            }
-            if (tsdiff < 30 || STR_EQUAL(cmd->valuestring, "CMD-02")) {
-                child = cJSON_GetObjectItem(desired, "timestamp");
-                if (child != NULL && child->type == cJSON_Number) {
-                    timeRTC_t time;
-                    RTC_TickToTime(child->valueint, &time);
-                    RTC_SetTime(&time);
-                }
-                child = cJSON_GetObjectItem(desired, "ip");
-                if (child != NULL && child->type == cJSON_String
-                        && !STR_EQUAL(WorkParam.mqtt.MQTT_Server, child->valuestring)) {
-                    strcpy(WorkParam.mqtt.MQTT_Server, child->valuestring);
-                    save++;
-                }
-                child = cJSON_GetObjectItem(desired, "username");
-                if (child != NULL && child->type == cJSON_String
-                        && !STR_EQUAL(WorkParam.mqtt.MQTT_UserName, child->valuestring)) {
-                    strcpy(WorkParam.mqtt.MQTT_UserName, child->valuestring);
-                    save++;
-                }
-                child = cJSON_GetObjectItem(desired, "userpwd");
-                if (child != NULL && child->type == cJSON_String
-                        && !STR_EQUAL(WorkParam.mqtt.MQTT_UserPWD, child->valuestring)) {
-                    strcpy(WorkParam.mqtt.MQTT_UserPWD, child->valuestring);
-                    save++;
-                }
-                child = cJSON_GetObjectItem(desired, "port");
-                if (child != NULL && child->type == cJSON_Number
-                        && WorkParam.mqtt.MQTT_Port != child->valueint) {
-                    WorkParam.mqtt.MQTT_Port = child->valueint;
-                    save++;
-                }
-                child = cJSON_GetObjectItem(desired, "heartbeat");
-                if (child != NULL && child->type == cJSON_Number
-                        && WorkParam.mqtt.MQTT_PingInvt != child->valueint) {
-                    WorkParam.mqtt.MQTT_PingInvt = child->valueint;
-                    save++;
-                }
-                if (save > 0) {
-                    WorkParam_Save();
-                }
-                CMD_Confirm_Rsp(msgid->valueint, ret_ok);
-            } else {
-                DBG_WAR("tsdiff error:%d", tsdiff);
-            }
-            if (STR_EQUAL(cmd->valuestring, "CMD-03")) {
-                ChickenManagementAnalysis(msgid->valueint, desired);
-            }
-            if (STR_EQUAL(cmd->valuestring, "CMD-05")) {
-                DeviceQueryAnalysis(msgid->valueint, desired);
-            }
-            if (STR_EQUAL(cmd->valuestring, "CMD-04")) {
-                DataAnalysis(msgid->valueint, desired);
-            }
-        }
-        cJSON_Delete(root);
-    }
-//    if (temp[0] != 0) {
-//        // CMD_Confirm_Rsp(temp, ret);
-//    }
-}
 
-#endif
 
 void Status_Updata(void) {
 	DBG_LOG("Ready to publish heartbeat.");
@@ -758,7 +605,7 @@ void beep(void) {
 //for(i=0; i<500; i++){
 // 蜂鸣器
 	HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_SET);
-	osDelay(200);
+	osDelay(100);
 	HAL_GPIO_WritePin(GPIOC, BEEP_EN_Pin, GPIO_PIN_RESET);
 //osDelay(1);
 //}
