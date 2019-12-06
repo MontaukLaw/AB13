@@ -243,8 +243,7 @@ BOOL publishData(char *cmd, cJSON *data) {
 			//DBG_INFO("Sending q to mqtt");
             			
 			//ret = Publish_MQTT(publishTopic, QOS2, (uint8_t*)s, strlen(s));
-			ret = Publish_MQTT(publishTopic, QOS0, (uint8_t*) s, strlen(s));
-            
+			ret = Publish_MQTT(publishTopic, QOS0, (uint8_t*) s, strlen(s));          
             
             MMEMORY_FREE(s);
 		}else{

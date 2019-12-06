@@ -99,23 +99,22 @@
 #define MQTT_TLS_EN             0
 
 //生产环境
-#define MQTT_SERVER_DEF         "116.62.93.197"
-
-//测试环境
-//#define MQTT_SERVER_DEF         "115.233.220.92"
+//#define MQTT_SERVER_DEF         "116.62.93.197"
+//#define MQTT_CLIENT_ID_DEF       "M047055000000003"
+//#define DEVICE_KEY               "1196246406932361217-M2IzMDc3Njgt"
+//#define MQTT_USER_DEF           "MHC"
+//#define MQTT_PWD_DEF            "f96a326b-7611-4533-8093-f01281884dbf"
+     
+//开发环境
+#define MQTT_SERVER_DEF         "115.233.220.92"
 #define MQTT_PORT_DEF           1883
-#define MQTT_USER_DEF           "MHC"
-#define MQTT_PWD_DEF            "f96a326b-7611-4533-8093-f01281884dbf"
-//#define MQTT_CLIENT_ID_DEF      "M047057000000002"
-//下面是个生产环境的id
-#define MQTT_CLIENT_ID_DEF       "M047055000000003"
-
-#define DEVICE_KEY               "1196246406932361217-M2IzMDc3Njgt"
-//For 0002
-//#define DEVICE_KEY               "1196246406932361216-NzA0MjRhM2Mt"
+#define MQTT_CLIENT_ID_DEF      "M047057000000002"
+#define MQTT_USER_DEF           "admin"
+#define MQTT_PWD_DEF            "public" 
+#define DEVICE_KEY               "1196246406932361216-NzA0MjRhM2Mt"
+     
 //M047057000000001
-//#define MQTT_CLIENT_ID_DEF      "MHC000000000005"
-
+//#define MQTT_CLIENT_ID_DEF    "MHC000000000005"
 //#define MQTT_TLS_EN         0
 //#define MQTT_SERVER_DEF     "47.107.124.226"
 //#define MQTT_PORT_DEF       1883
