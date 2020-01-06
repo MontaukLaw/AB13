@@ -43,7 +43,7 @@
 #define CMD_PRINTF_BUFF_MAX     1024
 #define CMD_FIFO_BUF_SIZE       256
 
-#define CMD_TASK_STK_SIZE       512
+#define CMD_TASK_STK_SIZE       128
 #define CMD_TASK_PRIO           osPriorityNormal
 
 /* Exported types ------------------------------------------------------------*/

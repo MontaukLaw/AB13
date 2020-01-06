@@ -329,6 +329,7 @@ static void Manager_MQTT(void) {
             connectData.password.cstring = WorkParam.mqtt.MQTT_UserPWD;
             connectData.cleansession = 1;
             connectData.willFlag = 0;
+            
             /*连接MQTT*/
 #if MQTT_TLS_EN == 1
             UserSSL_Disconnect();

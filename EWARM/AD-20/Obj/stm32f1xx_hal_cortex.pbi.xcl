@@ -93,6 +93,7 @@ D:\AFU硬件\车厂标签\Firmware\firmware\AB13BaseAD20New\w5500\internet\DNS
 D:\AFU硬件\车厂标签\Firmware\firmware\AB13BaseAD20New\user_app\inc
 -I
 D:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\arm\CMSIS\Include
+-DDEV=1
 -DSTM32F103xE=1
 -DUSE_HAL_DRIVER=1
 -DUNIT_TEST=1

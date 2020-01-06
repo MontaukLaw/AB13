@@ -115,6 +115,7 @@ void StartDefaultTask(void const *argument);
  */
 int main(void) {
 	/* USER CODE BEGIN 1 */
+    //transLabelId(1234567);
 	/* USER CODE END 1 */
 
 	/* MCU Configuration----------------------------------------------------------*/
@@ -636,6 +637,7 @@ void StartDefaultTask(void const *argument) {
 #if UART5_RECEVIE_BUFFER_SIZE > 0
 	UART_PortConfig(5, &huart5, UART5_RECEVIE_BUFFER_SIZE);
 #endif
+    
 	/*初始化核心驱动*/
 	CMD_Init();
 	System_Init();
@@ -656,7 +658,7 @@ void StartDefaultTask(void const *argument) {
 	// 外接时钟初始化
 	//ExternRTC_Init(&hi2c1);
 	//DBG_LOG("SPI flash erase chip begin.");
-	//SFlash_EraseChip();
+	SFlash_EraseChip();
 	//DBG_LOG("SPI flash erase chip OK.");
 
 	/*初始化系统功能*/
@@ -674,16 +676,27 @@ void StartDefaultTask(void const *argument) {
 	/*初始化外设驱动*/
 	//WIFI_Init();
 	//GPRS_Init();
-	w5500_Init(&hspi1);
-
-	// MQTT初始化
+    
+   	w5500_Init(&hspi1);
+  	// MQTT初始化
 	MQTT_Conn_Init();
+#if 0    
+    DBG_LOG("Wait for MQTT connect...");    
+    
+    while(!MQTT_IsConnected()){
+        CMD_UART_Read_Poll();
+        UART_Refresh_Poll();
+        TWDT_CLEAR(startTask);
+    }
+
+#endif    
+    //UART_PortConfig(3, &huart3, UART3_RECEVIE_BUFFER_SIZE);
+   	
+    /*初始化业务逻辑*/
+	Process_Init();
 
 	// 蓝牙模块任务
 	bt_Init();
-
-	/*初始化业务逻辑*/
-	Process_Init();
 
 	// Control_Init();
 	DBG_LOG("System Start!");

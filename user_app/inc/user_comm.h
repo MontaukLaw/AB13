@@ -50,24 +50,22 @@
 
 #include "RelayComProtocal.h"
 
-
 /* Exported define -----------------------------------------------------------*/
 /*调试串口号，为0时关闭打印输出*/
-#define DEBUG               5
+#define  DEBUG               5
 
 //#define DEBUG_BACKUP        4
 
 //#define UART_SP232_PORT     2
 
-#define BT_TEST_PORT        3
-//#define BT_TEST_PORT        4
+#define  BT_TEST_PORT        3
 
+//#define BT_TEST_PORT        4
 
 /*DEBUG 信息等级动态可设置使能*/
 #define LOG_LEVEL_DYNAMIC   1
 
-/*DEBUG
-	信息默认等级,须设置为常量数字宏才能展开*/
+/*DEBUG 信息默认等级,须设置为常量数字宏才能展开*/
 #define LOG_LEVEL_DEF       4
 
 #define M4G_UART_PORT       2
@@ -97,14 +95,17 @@
 //这个案子根据文档, mqtt服务器信息如下:
 
 #define MQTT_TLS_EN             0
-
-//生产环境
-//#define MQTT_SERVER_DEF         "116.62.93.197"
-//#define MQTT_CLIENT_ID_DEF       "M047055000000003"
-//#define DEVICE_KEY               "1196246406932361217-M2IzMDc3Njgt"
-//#define MQTT_USER_DEF           "MHC"
-//#define MQTT_PWD_DEF            "f96a326b-7611-4533-8093-f01281884dbf"
+#define PROD_ENV       0
      
+#if PROD_ENV
+//生产环境
+#define MQTT_SERVER_DEF         "116.62.93.197"
+#define MQTT_CLIENT_ID_DEF       "M047055000000010"
+#define MQTT_PORT_DEF           1883
+#define DEVICE_KEY               "1202842998612324353-Y2Y0MTM0ODgt"
+#define MQTT_USER_DEF           "MHC"
+#define MQTT_PWD_DEF            "f96a326b-7611-4533-8093-f01281884dbf"
+#else     
 //开发环境
 #define MQTT_SERVER_DEF         "115.233.220.92"
 #define MQTT_PORT_DEF           1883
@@ -112,7 +113,9 @@
 #define MQTT_USER_DEF           "admin"
 #define MQTT_PWD_DEF            "public" 
 #define DEVICE_KEY               "1196246406932361216-NzA0MjRhM2Mt"
-     
+
+#endif
+
 //M047057000000001
 //#define MQTT_CLIENT_ID_DEF    "MHC000000000005"
 //#define MQTT_TLS_EN         0
@@ -130,9 +133,9 @@
 
 #define UART1_RECEVIE_BUFFER_SIZE   0
 #define UART2_RECEVIE_BUFFER_SIZE   2048
-#define UART3_RECEVIE_BUFFER_SIZE   1024
+#define UART3_RECEVIE_BUFFER_SIZE   2048
 #define UART4_RECEVIE_BUFFER_SIZE   0
-#define UART5_RECEVIE_BUFFER_SIZE   1024
+#define UART5_RECEVIE_BUFFER_SIZE   128
 /* Exported types ------------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/

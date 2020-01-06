@@ -30,7 +30,7 @@
 
 /*协议处理缓存长度*/
 #define MQTT_TX_BUFF_SIZE               2048
-#define MQTT_RX_BUFF_SIZE               2048
+#define MQTT_RX_BUFF_SIZE               512
 
 //#define MQTT_TX_BUFF_SIZE               1024
 //#define MQTT_RX_BUFF_SIZE               1024
@@ -48,7 +48,8 @@
 
 //#define MQTT_TASK_STK_SIZE              512
 #define MQTT_TASK_STK_SIZE              1024
-#define MQTT_TASK_PRIO                  osPriorityNormal
+//#define MQTT_TASK_PRIO                  osPriorityNormal
+#define MQTT_TASK_PRIO         osPriorityHigh
 #define MQTT_SEND_Q_SIZE                16
 
 /* Exported types ------------------------------------------------------------*/

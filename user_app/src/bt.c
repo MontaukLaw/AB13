@@ -12,8 +12,9 @@
 #define BT_UART_REFRESH_TICK   200
 #define BT_RECEIVE_MAX_SIZE    1024
 
-//新solution最大支持标签数量为400个, 一次性解决问题
-#define MAX_LABLES_PER_BASE     400
+//新solution最大支持标签数量为480个, 一次性解决问题
+#define MAX_LABLES_PER_BASE     480
+//#define SECONDS_PER_MINUTE      60
 #define MAX_LABLE_ARR_LENGTH    (MAX_LABLES_PER_BASE/8)
 
 
@@ -24,7 +25,7 @@
 #define MOVEING_INTERFACE    0x05   //    移车接口
 
 //每个基站支持的标签数量
-#define SUPPORT_LABLE_PERLBASE   60
+//#define SUPPORT_LABLE_PERLBASE   60
 
 //每次发送队列的最大长度
 #define U1103_QUEUE_MAX  10
@@ -47,6 +48,8 @@ static void send1110Msg(uint8_t labelMarkByte);
 static void rfidErrorUpdate(uint8_t highByte, uint8_t lowByte, uint32_t labelID);
 static void stateChangedUpdate(uint8_t targetStatus, uint8_t initialStatus, uint32_t labelID);
 static void sendMovingEvent(uint8_t gSensorStatus, uint32_t labelID, uint8_t deviceStatus);
+void transLabelId(uint32_t deviceIDNumber);
+uint16_t transStatusToNumber(uint8_t status);
 
 TaskHandle_t BTtaskHandle;
 uint16_t reportTick = 0;
@@ -56,8 +59,10 @@ uint16_t lastReportTick = 0;
 //uint8_t deviceStatusArray[10];
 
 uint16_t labelU1103Number;
-
+uint8_t btIdx = 0;
 uint64_t timeStamp64;
+uint16_t queSize = 0;
+char labelIDStandard[17];
 
 //U1103队列索引
 static uint16_t inventoryUpdateQueueIndex = 0;
@@ -68,6 +73,8 @@ typedef struct {
 	uint16_t labelId;
 	uint8_t deviceStatus;
 } InventoryUpdateMsg;
+
+uint32_t labelIdQue[MAX_LABLES_PER_BASE];
 
 uint8_t labels1110Arr[MAX_LABLE_ARR_LENGTH];
 uint8_t labelsDeviceStatusArr[MAX_LABLES_PER_BASE];
@@ -117,6 +124,73 @@ BOOL ifQueueHasData(uint8_t queStartIndex) {
 }
 #endif
 
+static void sendInventoryUpdateMsg(uint16_t updateSendingIdx){
+    uint16_t i = 0;
+    uint16_t labelId = 0;
+    BOOL ifNeedSend = FALSE;
+ 	cJSON *data = NULL;
+    cJSON *infos = NULL;
+
+    DBG_LOG("%d, ram: %d",updateSendingIdx, xPortGetFreeHeapSize());
+    for(i=updateSendingIdx*8; i<((updateSendingIdx+1)*8); i++){
+        if(labelIdQue[i] > 0){
+            ifNeedSend = TRUE;
+            break;
+        }
+    }
+    if(ifNeedSend == TRUE){
+        data = cJSON_CreateObject();
+        if (data != NULL) {
+            infos = NULL;
+            infos = cJSON_CreateArray();
+            if (infos != NULL) {
+                for(i=updateSendingIdx*8; i<((updateSendingIdx+1)*8); i++){
+                    if(labelIdQue[i] > 0){
+                        //最少有一条可以发送
+                        
+                        labelId = labelIdQue[i];
+                        DBG_LOG("%d ready to send, pos: %d", labelId, i);
+                        
+                        cJSON *info = NULL;
+                        info = NULL;
+                        info = cJSON_CreateObject(); 
+                        if (info != NULL) {
+                            //将id转成字符串
+                            transLabelId(labelId);
+                             //加入状态
+                            cJSON_AddNumberToObject(info, "deviceStatus", transStatusToNumber(labelsDeviceStatusArr[i]));
+                            //恢复状态值,避免脏数据
+                            labelsDeviceStatusArr[i] = 0;
+                            //加入labelID
+                            cJSON_AddStringToObject(info, "labelId", labelIDStandard);
+                            
+                            //放入时间戳
+                            if (timeStamp64 != 0) {
+                                cJSON_AddNumberToObject(info, "dateTime", timeStamp64);
+                            } else {
+                                cJSON_AddNumberToObject(info, "dateTime", 1569484973000);
+                            }
+                            
+                            //加入数组
+                            cJSON_AddItemToArray(infos, info);            
+                            
+                        }//endof if (info != NULL)   
+                        
+                        labelIdQue[i] = 0;
+                    }//endof if(labelIdQue[i]>0)
+                         
+                }//endof for(i=label1110HandleIdx*8; i<((label1110HandleIdx+1)*8); i++)
+                
+                cJSON_AddItemToObjectCS(data, "infos", infos);        
+            }//endof if (infos != NULL)
+            
+            publishData("U1103", data);
+
+        }//endof if (data != NULL)       
+         
+    }    
+        
+}
 
 void BT_Task(void const *argument) {
 
@@ -139,12 +213,13 @@ void BT_Task(void const *argument) {
 			//BTCmdHanlde();
 			testCounter++;
             if(MQTT_IsConnected()){
-                send1110Msg(labels1110Arr[label1110HandleIdx]);
+                sendInventoryUpdateMsg(label1110HandleIdx);
+                //send1110Msg(labels1110Arr[label1110HandleIdx]);
             }
             label1110HandleIdx++;            
-            if(label1110HandleIdx > MAX_LABLE_ARR_LENGTH){
+            if(label1110HandleIdx >= MAX_LABLE_ARR_LENGTH){
                 label1110HandleIdx = 0;
-            }
+            }            
                        
 		}
 #if 0
@@ -191,7 +266,20 @@ static void bt_Console(int argc, char *argv[]) {
 
 }
 
-static void addLabelIdInQue(uint16_t labelID){
+static uint16_t addLabelIdInQue(uint32_t labelID){
+    uint16_t i;
+    for(i=0; i<MAX_LABLES_PER_BASE; i++){
+        if(labelIdQue[i] == 0){
+            labelIdQue[i] = labelID;
+            return i;
+        }     
+    }
+    
+    return 0;
+}
+
+#if 0
+static void addLabelIdInQue(uint32_t labelID){
     //首先找到属于数组中哪个byte
     uint16_t byteIdx = 0;
     uint8_t bitIdx = 0;
@@ -203,10 +291,21 @@ static void addLabelIdInQue(uint16_t labelID){
     labels1110Arr[byteIdx]= labels1110Arr[byteIdx] | ( 1 << (7 - bitIdx));
     DBG_LOG("%x: ",labels1110Arr[byteIdx]);
 }
+#endif
 
+static BOOL ifLabelIdInQue(uint32_t labelID) {
+    uint16_t i;
+    for(i=0; i<MAX_LABLES_PER_BASE; i++){
+        if(labelIdQue[i] == labelID){
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+#if 0
 //0 1 2 3 4 5 6 7  8 9 10 11 12 13 14 15  16
 //重写这个函数
-static BOOL ifLabelIdInQue(uint16_t labelID) {
+static BOOL ifLabelIdInQue(uint32_t labelID) {
     //首先找到属于数组中哪个byte
     uint16_t byteIdx = 0;
     uint8_t bitIdx = 0;
@@ -223,7 +322,7 @@ static BOOL ifLabelIdInQue(uint16_t labelID) {
     return FALSE;
 }
 
-#if 0
+
 static BOOL ifLabelIdInQue(uint8_t labelID) {
 	uint8_t i = 0;
 
@@ -258,7 +357,7 @@ static uint8_t anylizeBTCmd(uint8_t *cmd, uint16_t cmdLength) {
 	uint8_t i = 0;
 	uint8_t *cmdStart;
 	if (cmdLength >= MSG_LENGTH) {
-		//DBG_LOG("rssi is %d", *(cmd + 15));
+		DBG_LOG("rssi is %d", *(cmd + 15));
 
 		packageNumber = cmdLength / MSG_LENGTH;
 
@@ -275,7 +374,7 @@ static uint8_t anylizeBTCmd(uint8_t *cmd, uint16_t cmdLength) {
 					//|| ((uint32_t)(*(cmd + 5)));
 
 					//这里后面需要改
-					labelID = *(cmdStart + 5);
+					labelID = *(cmdStart + 5) + ((*(cmdStart + 4) )<< 8) + ((*(cmdStart + 3)) << 16) + ((*(cmdStart + 2)) << 24);
 
 					// 检查数据上报类型
 					switch (*(cmdStart + 12)) {
@@ -300,12 +399,17 @@ static uint8_t anylizeBTCmd(uint8_t *cmd, uint16_t cmdLength) {
 						break;
 
 					case INVENTRY_UPDATE:
+                                              
                         if(!ifLabelIdInQue(labelID)){
-                            //如果labelID不在列表中, 就加进去.
                             
-                            addLabelIdInQue(labelID); 
+                            //如果labelID不在列表中, 就加进去.                            
+                            uint16_t idx = addLabelIdInQue(labelID); 
+                            
                             //增加state
-                            labelsDeviceStatusArr[labelID] = newState;
+                            labelsDeviceStatusArr[idx] = newState;
+                            
+                            //DBG_LOG("NS:%d",newState);
+                            //DBG_LOG("OS:%d",oldState);
                         }
 
 #if 0                       
@@ -375,10 +479,20 @@ void BT_Intercept_Proc(void) {
 }
 
 //下面测试用
-char labelIDStandard[17] = "M030057000000002";
+
+//char labelIDStandard[17] = "M030057000000002";
 //生产用下面的
 //char labelIDStandard[17] = "M030055000000002";
-void transLabelId(uint16_t deviceIDNumber) {
+
+void transLabelId(uint32_t deviceIDNumber) {
+#if PROD_ENV   
+    sprintf(labelIDStandard, "M030055%09d", deviceIDNumber); 
+#else
+    sprintf(labelIDStandard, "M030057%09d", deviceIDNumber); 
+#endif    
+}
+
+void transLabelIdOld(uint32_t deviceIDNumber) {
 //void transLabelId(uint8_t deviceIDNumber) {
 
 	uint8_t time1, time10, time100;
@@ -392,6 +506,7 @@ void transLabelId(uint16_t deviceIDNumber) {
 	if (deviceIDNumber < 10) {
 		labelIDStandard[15] = (char) (deviceIDNumber + 0x30);
 		//*(labelIDStandard + 16) = deviceIDNumber;
+        
     //2位数
 	} else if (deviceIDNumber > 9 && deviceIDNumber < 100) {
 		time10 = deviceIDNumber / 10;
@@ -400,7 +515,8 @@ void transLabelId(uint16_t deviceIDNumber) {
 		labelIDStandard[14] = (char) (time10 + 0x30);
 		//*(labelIDStandard + 16) = time1;
 		//*(labelIDStandard + 15) = time10;
-    //3位数
+   
+        //3位数
 	} else if (deviceIDNumber > 99) {
 		time100 = deviceIDNumber / 100;
 		time10 = (deviceIDNumber - time100 * 100) / 10;
@@ -420,13 +536,14 @@ uint16_t transStatusToNumber(uint8_t status) {
 	return (1000 * ((status >> 3) & 1) + 100 * ((status >> 2) & 1) + 10 * ((status >> 1) & 1) + (status & 1));
 }
 
+
 //0 1 2 3 4 5 6 7  
 //8 9 10 11 12 13 14 15  
 //16 ...
 //label1110HandleIdx
 static void send1110Msg(uint8_t labelMarkByte){
     uint8_t i = 0;
-    uint8_t lId = 0;
+    uint32_t lId = 0;
     BOOL ifNeedSend = FALSE;
   	cJSON *data = NULL;
 
@@ -444,7 +561,9 @@ static void send1110Msg(uint8_t labelMarkByte){
                 if(labelMarkByte >> (7-i) & 1){
                     ifNeedSend = TRUE;
                     
-                    lId = label1110HandleIdx + i; 
+                    //labelID等于byte在数组中的索引乘以8, 再加上在byte中的索引. 
+                    lId = label1110HandleIdx * 8 + i; 
+                    
                     DBG_LOG("%d ready to send", lId);
                     
                     cJSON *info = NULL;
@@ -454,8 +573,13 @@ static void send1110Msg(uint8_t labelMarkByte){
 					if (info != NULL) {
                         //将id转成字符串
                         transLabelId(lId);
+                        
                         //加入状态
                         cJSON_AddNumberToObject(info, "deviceStatus", transStatusToNumber(labelsDeviceStatusArr[lId]));
+                        
+                        //恢复状态值,避免脏数据
+                        labelsDeviceStatusArr[lId] = 0;
+                        
                         cJSON_AddStringToObject(info, "labelId", labelIDStandard);
                         //放入时间戳
                         if (timeStamp64 != 0) {

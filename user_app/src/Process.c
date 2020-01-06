@@ -97,7 +97,7 @@ void Process_Init(void) {
 	Subscribe_MQTT(subscribeTopic, QOS0, ArrivePath);
 	// xTaskCreate(InquireTask, "InquireTask", 512, NULL, osPriorityNormal, &Inquiretask);
 
-	if (xTaskCreate(&InquireTask, "InquireTask", 512, NULL, 3, &Inquiretask) != pdPASS)
+	if (xTaskCreate(&InquireTask, "InquireTask", 512, NULL, 2, &Inquiretask) != pdPASS)
 		DBG_LOG("Create InquireAnalysis failure");
 	else
 		DBG_LOG("Create InquireAnalysis ok");
